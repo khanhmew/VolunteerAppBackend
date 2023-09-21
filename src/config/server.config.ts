@@ -8,7 +8,7 @@ const MONGODB_DATABASE_NAME = process.env.MONGODB_DATABASE_NAME ?? '';
 
 const MONGODB_URL = `mongodb+srv://
 ${MONGODB_USERNAME}:${MONGODB_PASSWORD}
-@cluster0.43x9eud.mongodb.net/${MONGODB_DATABASE_NAME}`;
+@cluster0.imlcljm.mongodb.net/${MONGODB_DATABASE_NAME}`;
 
 const SERVER_PORT = process.env.HTTP_SERVER_PORT ?? 3000;
 const SOCKET_IO_SERVER_PORT = process.env.SOCKET_IO_SERVER_PORT ?? 3200;
