@@ -52,7 +52,11 @@ export class AuthRepository {
             email: _user.email,
             username: _user.username,
             password: hashedPassword,
-            initTime: new Date()
+            initTime: new Date(),
+            type: _user.type,
+            isActiveOrganization: false,
+            imageAuthenticate: '',
+            phone: _user.phone
         });
         return userToStore.save();
     }

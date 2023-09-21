@@ -68,7 +68,18 @@ export class AuthService {
         throw new UsernameExistError("Username exist");
       }
       this.authRepository.register(user);
-      return user;
+      const userResult = {
+        _id: user._id,
+        type: user.type,
+        fullname: user.fullname,
+        avatar: user.avatar,
+        email: user.email,
+        username: user.username,
+        phone: user.phone,
+        imageAuthenticate: user.imageAuthenticate,
+        isActiveOrganization: user.isActiveOrganization
+      };
+      return userResult;
     } catch (error: any) {
       if (error.message.includes('duplicate key error')) {
         throw new UsernameExistError("Username exist");
