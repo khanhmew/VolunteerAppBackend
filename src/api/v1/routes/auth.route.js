@@ -1,0 +1,10 @@
+"use strict";
+exports.__esModule = true;
+var auth_controller_1 = require("../controllers/auth/auth.controller");
+var express_1 = require("express");
+var ratelimit_middleware_1 = require("../../../middleware/ratelimit.middleware");
+var authRoute = (0, express_1.Router)();
+var authControllerInstance = new auth_controller_1.AuthController();
+authRoute.post('/login', (0, ratelimit_middleware_1.RateLimit)(1, 5), authControllerInstance.authenticateUser);
+authRoute.post('/signup', authControllerInstance.signup);
+exports["default"] = authRoute;

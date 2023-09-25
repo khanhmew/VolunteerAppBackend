@@ -9,14 +9,18 @@
     "test": "npx jest --runInBand"
   },
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/khaphan-github/china-chess-nodejs-be.git"
   },
   "keywords": [
+    "webRTC"
   ],
   "author": "",
   "license": "ISC",
   "bugs": {
+    "url": "https://github.com/khaphan-github/WebRTC_NodeJS_BE/issues"
   },
+  "homepage": "https://github.com/khaphan-github/WebRTC_NodeJS_BE#readme",
   "dependencies": {
     "@jest/globals": "^29.3.1",
     "@types/autocannon": "^7.9.0",
