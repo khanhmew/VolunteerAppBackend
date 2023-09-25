@@ -2,8 +2,10 @@
 var _a, _b, _c, _d, _e;
 exports.__esModule = true;
 exports.serverConfig = void 0;
-var dotenv_1 = require("dotenv");
-dotenv_1["default"].config();
+// var dotenv_1 = require("dotenv");
+// dotenv_1["default"].config();
+const dotenv = require("dotenv");
+dotenv.config();
 var MONGODB_USERNAME = (_a = process.env.MONGODB_USERNAME) !== null && _a !== void 0 ? _a : '';
 var MONGODB_PASSWORD = (_b = process.env.MONGODB_PASSWORD) !== null && _b !== void 0 ? _b : '';
 var MONGODB_DATABASE_NAME = (_c = process.env.MONGODB_DATABASE_NAME) !== null && _c !== void 0 ? _c : '';
