@@ -1,7 +1,7 @@
 // Import dependencies && init serverlication express
 import express, { Application, NextFunction, Request, Response } from 'express';
 
-import bodyParser from 'body-parser';
+
 import { serverConfig } from './src/config/server.config';
 import mongoose from 'mongoose';
 import userRoute from './src/api/v1/routes/user.route';
