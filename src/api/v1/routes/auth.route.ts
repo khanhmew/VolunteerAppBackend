@@ -8,4 +8,5 @@ const authControllerInstance = new AuthController();
 
 authRoute.post('/login', RateLimit(1, 5),authControllerInstance.authenticateUser);
 authRoute.post('/signup', authControllerInstance.signup);
+authRoute.get('/checkUsername', authControllerInstance.checkUsernameExist);
 export default authRoute;

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "../../services/user.service";
-import { AccountNotFoundError } from "../../../../shared/error/auth.error";
+import { AccountNotFoundError, PasswordFormatError, WrongPasswordError } from "../../../../shared/error/auth.error";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
 import { uploadImageFromFormData } from "../../services/firebase.service";
 import User, { IUser } from "../../repository/user/user.entity";
@@ -96,6 +96,7 @@ export class UserController {
                     fullname: req.body.fullname,
                     password: req.body.password,
                     phone: req.body.phone,
+                    oldPassword: req.body.oldPassword,
                 };
     
                 if (req.file) {
@@ -125,6 +126,9 @@ export class UserController {
         } catch (error) {
             if (error instanceof AccountNotFoundError) {
                 return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'ACccount not found', null));
+            }
+            if (error instanceof WrongPasswordError) {
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Password not match', null));
             }
             console.error('Error:', error);
             return res.status(500).json(ResponseBase(ResponseStatus.FAILURE, 'Internal server error', null));

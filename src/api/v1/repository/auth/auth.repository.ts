@@ -64,7 +64,7 @@ export class AuthRepository {
         return userToStore.save();
     }
 
-    findExistByUsername = async (_username: string) => {
+    findExistByUsername = async (_username: String) => {
       try {
         const user = await User.findOne({ username: _username }).exec();
         return user; 

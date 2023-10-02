@@ -88,4 +88,11 @@ export class AuthService {
       }
     }
   }
+
+  async checkUsernameExist(username: String){
+    const userForCheckUsername = await this.authRepository.findExistByUsername(username);
+    if(userForCheckUsername)
+      return true;
+    return false;
+  }
 }

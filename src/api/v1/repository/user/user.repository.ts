@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import User, { IUser } from './user.entity';
+import { WrongPasswordError } from '../../../../shared/error/auth.error';
 const bcrypt = require('bcrypt');
 
 export class UserRepository {
@@ -47,26 +48,34 @@ export class UserRepository {
         const oldUser: any = await this.getExistUserById(oldUserId);
         const changes: Partial<IUser> = {};
 
-        if (newUser.username !== oldUser.username) {
+        if (newUser.username !== oldUser.username && newUser.username !== null && newUser.username != '') {
             changes.username = newUser.username;
         }
-        if (newUser.email !== oldUser.email) {
+        if (newUser.email !== oldUser.email && newUser.email !== null && newUser.email != '') {
             changes.email = newUser.email;
         }
-        if (newUser.fullname !== oldUser.fullname) {
+        if (newUser.fullname !== oldUser.fullname && newUser.fullname !== null && newUser.fullname != '') {
             changes.fullname = newUser.fullname;
         }
-        if (newUser.avatar !== oldUser.avatar) {
+        if (newUser.avatar !== oldUser.avatar && newUser.avatar !== null && newUser.avatar != '') {
             changes.avatar = newUser.avatar;
         }
-        if (newUser.password !== null && newUser.password !== '') {
-            if (oldUser.password && newUser.password) {
-                const passwordMatch = await bcrypt.compare(oldUser.password, newUser.password);
-                if (passwordMatch === false) {
-                    const hashedPassword = await bcrypt.hash(newUser.password, 10);
-                    changes.password = hashedPassword;
+        const passMatchWithOldPass = await bcrypt.compare(newUser.oldPassword , oldUser.password);
+        console.log("Old user: " + oldUser);
+        console.log("old pass " + newUser.oldPassword + " True or false: " + passMatchWithOldPass);
+        if(passMatchWithOldPass){
+            if (newUser.password !== null && newUser.password !== '') {
+                if (oldUser.password && newUser.password) {
+                    const passwordMatch = await bcrypt.compare(oldUser.password, newUser.password);
+                    if (passwordMatch === false) {
+                        const hashedPassword = await bcrypt.hash(newUser.password, 10);
+                        changes.password = hashedPassword;
+                    }
                 }
             }
+        }
+        if(!passMatchWithOldPass){
+            throw new WrongPasswordError('Password not match');
         }
 
         if (newUser.address !== oldUser.address) {
@@ -102,6 +111,7 @@ export class UserRepository {
             return null;
         }
     };
+
 
 
     // editOrganizationProfile = (_organization: IUser) => {
