@@ -69,6 +69,10 @@ export class UserRepository {
             }
         }
 
+        if (newUser.address !== oldUser.address) {
+            changes.address = newUser.address;
+        }
+
         if (newUser.phone !== oldUser.phone) {
             changes.phone = newUser.phone;
         }
@@ -86,7 +90,8 @@ export class UserRepository {
                     username: updatedUser?.username,
                     phone: updatedUser?.phone,
                     avatar: updatedUser?.avatar,
-                    email: updatedUser?.email
+                    email: updatedUser?.email,
+                    address: updatedUser?.address
                 };
                 return userResultForUpdate;
             } catch (error) {

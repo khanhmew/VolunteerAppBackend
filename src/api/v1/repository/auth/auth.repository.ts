@@ -31,6 +31,9 @@ export class AuthRepository {
             avatar: user.avatar,
             email: user.email,
             username: user.username,
+            phone: user.phone,
+            address: user.address,
+            sex: user.sex
           };
           return {userResult, accessToken, refreshToken };
           } else {
@@ -47,12 +50,16 @@ export class AuthRepository {
 
         const userToStore = new User({
             _id: new mongoose.Types.ObjectId(),
+            type: _user.type,
             fullname: _user.fullname,
             avatar: _user.avatar,
             email: _user.email,
             username: _user.username,
             password: hashedPassword,
-            initTime: new Date()
+            initTime: new Date(),
+            address: _user.address,
+            phone: _user.phone,
+            sex: _user.sex
         });
         return userToStore.save();
     }
@@ -76,4 +83,5 @@ export class AuthRepository {
         return null;
       }
     }
+    
 }
