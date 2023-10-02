@@ -10,7 +10,7 @@ export interface IUser {
     phone: string;
     initTime: Date;
     isActiveOrganization: boolean;
-    imageAuthenticate: string;
+    imageAuthenticate: Array<String>;
     address: String;
     sex: String;
 }
@@ -28,7 +28,7 @@ const IUserSchema: Schema = new Schema(
         phone: {type: String, required: true, unique: true},
         initTime: { type: Date, required: true },
         isActiveOrganization: {type: Boolean, required: false},
-        imageAuthenticate: {type: String, required: false},
+        imageAuthenticate: { type: Array<String> , required: false},
         address: {type: String, required: false},
         sex: {type: String, required: true}
     },
@@ -50,7 +50,7 @@ export const DefaultUserData = (type: string, email: string, fullname: string, u
         initTime: new Date(),
         password: passwordHash,
         isActiveOrganization: false,
-        imageAuthenticate: '',
+        imageAuthenticate: [],
         address: '',
         sex:''
     }

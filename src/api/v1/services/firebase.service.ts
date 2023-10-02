@@ -66,7 +66,7 @@ export const uploadImageFromFormData = async (fileData: any, remoteFileName: any
     });
 
     stream.on('finish', () => {
-      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${file.name}?alt=media`;
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(file.name)}?alt=media`;
       console.log('Uploaded image URL:', imageUrl);
       resolve(imageUrl);
     });

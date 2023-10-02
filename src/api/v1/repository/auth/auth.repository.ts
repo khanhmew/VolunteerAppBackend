@@ -59,7 +59,9 @@ export class AuthRepository {
             initTime: new Date(),
             address: _user.address,
             phone: _user.phone,
-            sex: _user.sex
+            sex: _user.sex,
+            imageAuthenticate: [],
+            isActiveOrganization: false          
         });
         return userToStore.save();
     }

@@ -76,7 +76,9 @@ export class AuthService {
         username: user.username,
         sex: user.sex,
         address: user.address,
-        phone: user.phone
+        phone: user.phone,
+        isActiveOrganization: user.isActiveOrganization,
+        imageAuthenticate: user.imageAuthenticate
       }
       return userResultRegister;
     } catch (error: any) {

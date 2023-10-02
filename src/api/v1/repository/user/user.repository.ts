@@ -118,8 +118,8 @@ export class UserRepository {
     //     return 
     // }
 
-    // verifyOrganiztion = (_organization: IUser) => {
-    //     return
-    // }
+    verifyOrganiztion = (_organization: any) => {
+        return
+    }
 
 }
