@@ -88,7 +88,6 @@ export class UserController {
 
     updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log(`userid from query:  ${req.query.userid}`);
             if (req.user.userId == req.query.userid) {
                 const newUser: any = {
                     id: req.user.userId,
@@ -139,19 +138,25 @@ export class UserController {
 
     verifyOrganiztion = async (req: Request, res: Response, next: NextFunction) => {
         try {
+            console.log('User:', JSON.stringify(req.user));
             if (req.user.userId == req.query.orgId) {
-                const uploadedImages = req.files; // Mảng các tệp đã tải lên
-                if (uploadedImages && uploadedImages.length > 0) {
-                    const imageUrls = [];
-                    for (const uploadedImage of uploadedImages) {
-                        const remoteFileName = `avatars/${req.user.userId}/${uploadedImage.originalname}`;
-                        const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
-                        imageUrls.push(imageUrl);
+                {
+                    const uploadedImages = req.files; // Mảng các tệp đã tải lên
+                    if (uploadedImages && uploadedImages.length > 0) {
+                        const imageUrls = [];
+                        for (const uploadedImage of uploadedImages) {
+                            const remoteFileName = `avatars/${req.user.userId}/${uploadedImage.originalname}`;
+                            const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
+                            imageUrls.push(imageUrl);
+                        }
+                        const orgVerifyResult = await this.userServiceInstance.verifyOrganization(req.query.orgId, imageUrls);
+                        if(orgVerifyResult)
+                        {
+                            return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Upload image to verify success', orgVerifyResult));
+                        }
                     }
-                    const orgVerifyResult = await this.userServiceInstance.verifyOrganization(req.query.orgId, imageUrls);
-                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Upload image to verify success', orgVerifyResult));
                 }
-            }else {
+            } else {
                 return res.status(500).json(ResponseBase(ResponseStatus.FAILURE, 'You must authenticate', null));
             }
         } catch (error) {

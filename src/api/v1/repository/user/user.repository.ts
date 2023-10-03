@@ -43,7 +43,19 @@ export class UserRepository {
             throw error;
         }
     }
-    
+
+
+    getExistOrgById = async (_idUser: string) => {
+        try {
+            const user = await User.findOne({
+                _id: _idUser
+            }).select(['_id','phone','fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);  
+            return user;
+        } catch (error) {
+            console.error('Error getting user by ID:', error);
+            throw error;
+        }
+    }
 
     updateUserProfile = async (oldUserId: any, newUser: any) => {
         const oldUser: any = await this.getExistUserById(oldUserId);
@@ -126,11 +138,16 @@ export class UserRepository {
 
     verifyOrganization = async (_orgId: string, _images: string[]) => {
         try {
-          const orgForVerify: any = await this.getExistUserById(_orgId);       
+          const orgForVerify: any = await this.getExistOrgById(_orgId);
+          console.log('orgForVerify: ' + orgForVerify);       
           if (!orgForVerify) {
             throw new AccountNotFoundError('Organization not found');
-          }  
-          orgForVerify.imageAuthentication.push(..._images);     
+          }
+          if (orgForVerify.imageAuthenticate.length === 0) {
+            orgForVerify.imageAuthenticate = [];
+          }
+          console.log('before: ' + orgForVerify.imageAuthenticate.length)  
+          orgForVerify.imageAuthenticate.push(..._images);     
           const updatedOrg = await orgForVerify.save();   
           return updatedOrg;
         } catch (error) {
