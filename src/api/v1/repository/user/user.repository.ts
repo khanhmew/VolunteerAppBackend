@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import User, { IUser } from './user.entity';
-import { WrongPasswordError } from '../../../../shared/error/auth.error';
+import { AccountNotFoundError, WrongPasswordError } from '../../../../shared/error/auth.error';
+import { uploadImageFromFormData } from '../../services/firebase.service';
 const bcrypt = require('bcrypt');
 
 export class UserRepository {
@@ -85,6 +86,11 @@ export class UserRepository {
         if (newUser.phone !== oldUser.phone) {
             changes.phone = newUser.phone;
         }
+
+        if (newUser.address !== oldUser.address) {
+            changes.address = newUser.address;
+        }
+
         if (Object.keys(changes).length > 0) {
             try {
                 const updatedUser = await User.findByIdAndUpdate(
@@ -118,8 +124,20 @@ export class UserRepository {
     //     return 
     // }
 
-    verifyOrganiztion = (_organization: any) => {
-        return
-    }
+    verifyOrganization = async (_orgId: string, _images: string[]) => {
+        try {
+          const orgForVerify: any = await this.getExistUserById(_orgId);       
+          if (!orgForVerify) {
+            throw new AccountNotFoundError('Organization not found');
+          }  
+          orgForVerify.imageAuthentication.push(..._images);     
+          const updatedOrg = await orgForVerify.save();   
+          return updatedOrg;
+        } catch (error) {
+          console.error('Error verifying organization:', error);
+          throw error;
+        }
+      }
+    
 
 }

@@ -67,11 +67,22 @@ export class UserService {
     // }
   }
   async updateUserProfile(_user: any) {
-      try{
-        const userResultUpdate = await this.userRepository.updateUserProfile(_user.id, _user);
-        return userResultUpdate;
-      }catch(error: any){
-          throw error;
-      }   
+    try {
+      const userResultUpdate = await this.userRepository.updateUserProfile(_user.id, _user);
+      return userResultUpdate;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async verifyOrganization(_orgId: any, _images: any) {
+    try {
+      const orgResult = await this.userRepository.verifyOrganization(_orgId, _images);
+      return orgResult;
+    } catch (error: any) {
+      if (error instanceof AccountNotFoundError) {
+        throw new AccountNotFoundError('Organization not found');
+      }
+    }
   }
 }

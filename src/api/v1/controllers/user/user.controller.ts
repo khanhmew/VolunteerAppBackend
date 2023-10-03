@@ -11,6 +11,7 @@ declare global {
         interface Request {
             file?: any;
             user?: any;
+            files?: any
         }
     }
 }
@@ -88,7 +89,7 @@ export class UserController {
     updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
         try {
             console.log(`userid from query:  ${req.query.userid}`);
-            if(req.user.userId == req.query.userid){
+            if (req.user.userId == req.query.userid) {
                 const newUser: any = {
                     id: req.user.userId,
                     username: req.body.username,
@@ -98,34 +99,34 @@ export class UserController {
                     phone: req.body.phone,
                     oldPassword: req.body.oldPassword,
                 };
-    
+
                 if (req.file) {
                     const uploadedFile = req.file;
                     const remoteFileName = `avatars/${req.user.userId}/${uploadedFile.originalname}`;
                     const imageUrl = await uploadImageFromFormData(uploadedFile, remoteFileName);
-    
+
                     newUser.avatar = imageUrl;
                 }
-    
+
                 if (!req.user || !req.user.userId) {
                     return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'User not found', null));
                 }
-    
+
                 const updatedUser = await this.userServiceInstance.updateUserProfile(newUser);
-    
+
                 if (updatedUser) {
                     return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Profile updated successfully', updatedUser));
                 } else {
                     return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'No changes to update', updatedUser));
                 }
             }
-            else{
+            else {
                 return res.status(500).json(ResponseBase(ResponseStatus.FAILURE, 'You must authenticate', null));
             }
-            
+
         } catch (error) {
             if (error instanceof AccountNotFoundError) {
-                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'ACccount not found', null));
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Acccount not found', null));
             }
             if (error instanceof WrongPasswordError) {
                 return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Password not match', null));
@@ -134,6 +135,31 @@ export class UserController {
             return res.status(500).json(ResponseBase(ResponseStatus.FAILURE, 'Internal server error', null));
         }
     };
+
+
+    verifyOrganiztion = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (req.user.userId == req.query.orgId) {
+                const uploadedImages = req.files; // Mảng các tệp đã tải lên
+                if (uploadedImages && uploadedImages.length > 0) {
+                    const imageUrls = [];
+                    for (const uploadedImage of uploadedImages) {
+                        const remoteFileName = `avatars/${req.user.userId}/${uploadedImage.originalname}`;
+                        const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
+                        imageUrls.push(imageUrl);
+                    }
+                    const orgVerifyResult = await this.userServiceInstance.verifyOrganization(req.query.orgId, imageUrls);
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Upload image to verify success', orgVerifyResult));
+                }
+            }else {
+                return res.status(500).json(ResponseBase(ResponseStatus.FAILURE, 'You must authenticate', null));
+            }
+        } catch (error) {
+            if (error instanceof AccountNotFoundError) {
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Organization not found', null));
+            }
+        }
+    }
 
 }
 
