@@ -45,11 +45,11 @@ export class UserRepository {
     }
 
 
-    getExistOrgById = async (_idUser: string) => {
+    getExistOrgById = async (_idUser: String) => {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
+            }).select(['_id','type', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
@@ -138,7 +138,7 @@ export class UserRepository {
     //     return 
     // }
 
-    verifyOrganization = async (_orgId: string, _images: string[]) => {
+    verifyOrganization = async (_orgId: String, _images: String[]) => {
         try {
             const orgForVerify: any = await this.getExistOrgById(_orgId);
             console.log('orgForVerify: ' + orgForVerify);

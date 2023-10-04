@@ -12,6 +12,7 @@ import { SocketIOServer } from './src/socket/v1/socket-io.server';
 import { ResponseBase, ResponseStatus } from './src/shared/response/response.payload';
 
 import { authenticateToken } from './src/middleware/token.middleware';
+import postRoute from './src/api/v1/routes/post.route';
 
 const server: Application = express();
 
@@ -52,6 +53,7 @@ const startHTTPServer = () => {
   server.use(serverConfig.api.path, routes);
   routes.use(userRoute);
   routes.use(authRoute);
+  routes.use(postRoute);
 
   // server.use('',  (req: Request, res: Response, next: NextFunction) => {
   //   return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'I need U'));
