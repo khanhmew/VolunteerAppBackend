@@ -97,6 +97,7 @@ export class UserController {
                     password: req.body.password,
                     phone: req.body.phone,
                     oldPassword: req.body.oldPassword,
+                    address: req.body.address ,
                 };
 
                 if (req.file) {

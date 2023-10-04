@@ -25,17 +25,38 @@ export class AuthRepository {
             const refreshToken = jwt.sign({ username: user.username, userId: user._id }, SECRETKEY, {
             expiresIn: '30d', 
           });
-          const userResult = {
-            _id: user._id,
-            fullname: user.fullname,
-            avatar: user.avatar,
-            email: user.email,
-            username: user.username,
-            phone: user.phone,
-            address: user.address,
-            sex: user.sex
-          };
-          return {userResult, accessToken, refreshToken };
+          if(user.type.toLowerCase() == 'Organization'){
+            const orgResult = {
+              _id: user._id,
+              type: user.type,
+              fullname: user.fullname,
+              avatar: user.avatar,
+              email: user.email,
+              username: user.username,
+              phone: user.phone,
+              address: user.address,
+              sex: user.sex,
+              imageAuthenticate: user.imageAuthenticate,
+              isActiveOrganization: user.isActiveOrganization
+            };
+            console.log('orgResult: ' + JSON.stringify(orgResult));
+
+            return {orgResult, accessToken, refreshToken };
+          }
+          else{
+            const userResult = {
+              _id: user._id,
+              type: user.type,
+              fullname: user.fullname,
+              avatar: user.avatar,
+              email: user.email,
+              username: user.username,
+              phone: user.phone,
+              address: user.address,
+              sex: user.sex,
+            }
+            return {userResult, accessToken, refreshToken };
+          }
           } else {
             throw new WrongPasswordError('Wrong password');
           }

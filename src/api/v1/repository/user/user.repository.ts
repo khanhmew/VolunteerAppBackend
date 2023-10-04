@@ -36,7 +36,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id','phone','fullname', 'password', 'avatar', 'email', 'username']);  
+            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
@@ -49,7 +49,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id','phone','fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);  
+            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
@@ -73,22 +73,24 @@ export class UserRepository {
         if (newUser.avatar !== oldUser.avatar && newUser.avatar !== null && newUser.avatar != '') {
             changes.avatar = newUser.avatar;
         }
-        const passMatchWithOldPass = await bcrypt.compare(newUser.oldPassword , oldUser.password);
-        console.log("Old user: " + oldUser);
-        console.log("old pass " + newUser.oldPassword + " True or false: " + passMatchWithOldPass);
-        if(passMatchWithOldPass){
-            if (newUser.password !== null && newUser.password !== '') {
-                if (oldUser.password && newUser.password) {
-                    const passwordMatch = await bcrypt.compare(oldUser.password, newUser.password);
-                    if (passwordMatch === false) {
-                        const hashedPassword = await bcrypt.hash(newUser.password, 10);
-                        changes.password = hashedPassword;
+        if (newUser.oldPassword && newUser.oldPassword) {
+            const passMatchWithOldPass = await bcrypt.compare(newUser.oldPassword, oldUser.password);
+            console.log("Old user: " + oldUser);
+            console.log("old pass " + newUser.oldPassword + " True or false: " + passMatchWithOldPass);
+            if (passMatchWithOldPass) {
+                if (newUser.password !== null && newUser.password !== '') {
+                    if (oldUser.password && newUser.password) {
+                        const passwordMatch = await bcrypt.compare(oldUser.password, newUser.password);
+                        if (passwordMatch === false) {
+                            const hashedPassword = await bcrypt.hash(newUser.password, 10);
+                            changes.password = hashedPassword;
+                        }
                     }
                 }
             }
-        }
-        if(!passMatchWithOldPass){
-            throw new WrongPasswordError('Password not match');
+            if (!passMatchWithOldPass) {
+                throw new WrongPasswordError('Password not match');
+            }
         }
 
         if (newUser.address !== oldUser.address) {
@@ -110,7 +112,7 @@ export class UserRepository {
                     changes, // Dữ liệu cần cập nhật
                     { new: true } // Tùy chọn để trả về người dùng đã cập nhật
                 );
-                const userResultForUpdate ={
+                const userResultForUpdate = {
                     _id: updatedUser?.id,
                     type: updatedUser?.type,
                     fullname: updatedUser?.fullname,
@@ -138,23 +140,23 @@ export class UserRepository {
 
     verifyOrganization = async (_orgId: string, _images: string[]) => {
         try {
-          const orgForVerify: any = await this.getExistOrgById(_orgId);
-          console.log('orgForVerify: ' + orgForVerify);       
-          if (!orgForVerify) {
-            throw new AccountNotFoundError('Organization not found');
-          }
-          if (orgForVerify.imageAuthenticate.length === 0) {
-            orgForVerify.imageAuthenticate = [];
-          }
-          console.log('before: ' + orgForVerify.imageAuthenticate.length)  
-          orgForVerify.imageAuthenticate.push(..._images);     
-          const updatedOrg = await orgForVerify.save();   
-          return updatedOrg;
+            const orgForVerify: any = await this.getExistOrgById(_orgId);
+            console.log('orgForVerify: ' + orgForVerify);
+            if (!orgForVerify) {
+                throw new AccountNotFoundError('Organization not found');
+            }
+            if (orgForVerify.imageAuthenticate.length === 0) {
+                orgForVerify.imageAuthenticate = [];
+            }
+            console.log('before: ' + orgForVerify.imageAuthenticate.length)
+            orgForVerify.imageAuthenticate.push(..._images);
+            const updatedOrg = await orgForVerify.save();
+            return updatedOrg;
         } catch (error) {
-          console.error('Error verifying organization:', error);
-          throw error;
+            console.error('Error verifying organization:', error);
+            throw error;
         }
-      }
-    
+    }
+
 
 }
