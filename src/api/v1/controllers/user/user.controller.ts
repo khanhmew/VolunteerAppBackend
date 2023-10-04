@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "../../services/user.service";
-import { AccountNotFoundError, PasswordFormatError, WrongPasswordError } from "../../../../shared/error/auth.error";
+import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, PasswordFormatError, WrongPasswordError } from "../../../../shared/error/auth.error";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
 import { uploadImageFromFormData } from "../../services/firebase.service";
 import User, { IUser } from "../../repository/user/user.entity";
@@ -164,6 +164,26 @@ export class UserController {
         }
     }
 
+    activeOrganiztion = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const adminId = req.user.userId;
+            const orgForActive: any = req.query.orgId;
+            const activeResult =await this.userServiceInstance.activeOrganization(adminId, orgForActive); 
+            if(activeResult)
+            {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Organization is active', null));
+            }
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Organization fail to active', null));
+        } catch (error) {
+            if (error instanceof AccountNotFoundError) {
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Organization not found', null));
+            } else if (error instanceof AccountTypeNotAdmin) {
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'You must be admin to active this org', null));
+            } else if (error instanceof AccountTypeNotOrg) {
+                return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'This account is not org', null));
+            }
+        }
+    }
 }
 
 

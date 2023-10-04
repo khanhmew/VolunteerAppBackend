@@ -1,4 +1,4 @@
-import { DateFormat, ExpirationDateMustGreaterCurrentDate, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../shared/error/post.error";
+import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../shared/error/post.error";
 import {
   ResponseBase,
   ResponseStatus,
@@ -31,6 +31,9 @@ export class PostService {
       }
       else if (error instanceof ParticipantsMustGreaterThan0) {
         throw new ParticipantsMustGreaterThan0('ParticipantsMustGreaterThan0');
+      }
+      else if (error instanceof OrgNotActive) {
+        throw new OrgNotActive('OrgNotActive');
       }
     }
   }

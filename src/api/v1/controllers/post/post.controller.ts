@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { PostService } from "../../services/post.service";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
 import { uploadImageFromFormData } from "../../services/firebase.service";
-import { DateFormat, ExpirationDateMustGreaterCurrentDate, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../../shared/error/post.error";
+import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../../shared/error/post.error";
 
 declare global {
   namespace Express {
@@ -56,6 +56,9 @@ export class PostController {
       }
       else if (error instanceof ParticipantsMustGreaterThan0) {
         return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Participants Must Greater Than 0', null));
+      }
+      else if (error instanceof OrgNotActive) {
+        return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Org not active', null));
       }
     }
   }

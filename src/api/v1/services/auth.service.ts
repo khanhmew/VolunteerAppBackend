@@ -36,7 +36,7 @@ export class AuthService {
         _username,
         _password
       );
-      if (authResult.userResult)
+      if (authResult.userResult || authResult.orgResult)
         return authResult;
     } catch (error) {
       if (error instanceof AccountNotFoundError) {

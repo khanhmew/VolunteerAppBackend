@@ -25,7 +25,7 @@ export class AuthRepository {
             const refreshToken = jwt.sign({ username: user.username, userId: user._id }, SECRETKEY, {
             expiresIn: '30d', 
           });
-          if(user.type.toLowerCase() == 'Organization'){
+          if(user.type.toLowerCase() === 'organization'){
             const orgResult = {
               _id: user._id,
               type: user.type,

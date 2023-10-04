@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import User, { IUser } from './user.entity';
-import { AccountNotFoundError, WrongPasswordError } from '../../../../shared/error/auth.error';
+import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, WrongPasswordError } from '../../../../shared/error/auth.error';
 import { uploadImageFromFormData } from '../../services/firebase.service';
+import { OrgActiveBefore } from '../../../../shared/error/auth.error';
 const bcrypt = require('bcrypt');
 
 export class UserRepository {
@@ -49,7 +50,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id','type', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
+            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
@@ -122,7 +123,7 @@ export class UserRepository {
                     email: updatedUser?.email,
                     address: updatedUser?.address
                 };
-                return {userResultForUpdate};
+                return { userResultForUpdate };
             } catch (error) {
                 console.error('Error updating user:', error);
                 throw error;
@@ -158,5 +159,29 @@ export class UserRepository {
         }
     }
 
-
+    activeOrg = async (_adminId: String, _orgId: String) => {
+        const orgForActive: any = await this.getExistOrgById(_orgId);
+        const userForCheckAdmin: any = await this.getExistOrgById(_adminId);
+        if (!orgForActive) {
+            throw new AccountNotFoundError('Organization not found');
+        }
+        if (orgForActive.type == 'Organization') {
+            if(userForCheckAdmin.type == 'Admin'){
+                if (orgForActive.isActiveOrganization) {
+                    throw new OrgActiveBefore('OrgActiveBefore');
+                }
+                else {
+                    orgForActive.isActiveOrganization = true;
+                    const activeOrg = await orgForActive.save();
+                    return activeOrg;
+                }
+            }
+            else{
+                throw new AccountTypeNotAdmin('AccountTypeNotAdmin');
+            }
+            
+        } else {
+            throw new AccountTypeNotOrg('AccountTypeNotOrg');
+        }
+    }
 }

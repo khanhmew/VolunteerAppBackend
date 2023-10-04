@@ -85,4 +85,15 @@ export class UserService {
       }
     }
   }
+
+  async activeOrganization(_adminId: String, _orgId: String) {
+    try {
+      const activeResult = await this.userRepository.activeOrg(_adminId, _orgId);
+      return activeResult;
+    } catch (error: any) {
+      if (error instanceof AccountNotFoundError) {
+        throw new AccountNotFoundError('Organization not found');
+      }
+    }
+  }
 }

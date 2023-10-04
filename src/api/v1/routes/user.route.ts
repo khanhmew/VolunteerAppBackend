@@ -16,5 +16,6 @@ const upload = multer({
 //userRoute.post('/user', authenticateToken, userControllerInstance.saveUserCallback);
 userRoute.get('/user',authenticateToken, userControllerInstance.getAll);
 userRoute.put('/user', authenticateToken, upload.single('avatar'), userControllerInstance.updateUserProfile);
-userRoute.put('/org', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
+userRoute.put('/org/verify', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
+userRoute.put('/org/active', authenticateToken, userControllerInstance.activeOrganiztion)
 export default userRoute;

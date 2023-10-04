@@ -29,3 +29,12 @@ export class ParticipantsMustGreaterThan0 extends Error {
     Object.setPrototypeOf(this, ParticipantsMustGreaterThan0.prototype);
   }
 }
+
+export class OrgNotActive extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrgNotActive";
+    Object.setPrototypeOf(this, OrgNotActive.prototype);
+  }
+}
+

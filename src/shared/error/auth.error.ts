@@ -37,3 +37,27 @@ export class EmailFormatError extends Error {
     Object.setPrototypeOf(this, EmailFormatError.prototype);
   }
 }
+
+export class OrgActiveBefore extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrgActiveBefore";
+    Object.setPrototypeOf(this, OrgActiveBefore.prototype);
+  }
+}
+
+export class AccountTypeNotOrg extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AccountTypeNotOrg";
+    Object.setPrototypeOf(this, AccountTypeNotOrg.prototype);
+  }
+}
+
+export class AccountTypeNotAdmin extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AccountTypeNotAdmin";
+    Object.setPrototypeOf(this, AccountTypeNotAdmin.prototype);
+  }
+}
