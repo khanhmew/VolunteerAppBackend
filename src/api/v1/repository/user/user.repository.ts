@@ -122,7 +122,7 @@ export class UserRepository {
                     email: updatedUser?.email,
                     address: updatedUser?.address
                 };
-                return userResultForUpdate;
+                return {userResultForUpdate};
             } catch (error) {
                 console.error('Error updating user:', error);
                 throw error;
