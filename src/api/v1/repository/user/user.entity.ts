@@ -30,7 +30,7 @@ const IUserSchema: Schema = new Schema(
         isActiveOrganization: {type: Boolean, required: false},
         imageAuthenticate: { type: Array<String> , required: false},
         address: {type: String, required: false},
-        sex: {type: String, required: true}
+        sex: {type: String, required: false}
     },
     {
         versionKey: false
