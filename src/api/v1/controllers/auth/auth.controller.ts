@@ -56,7 +56,7 @@ export class AuthController {
 
   checkUsernameExist = async(req: Request, res: Response, next: NextFunction) =>{
       try {
-        const username = req.body.username;
+        const username: any = req.query.username;
         const usernameExitsResult = await this.authServiceInstance.checkUsernameExist(username);
         if(usernameExitsResult)
           return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Username exist', null)) 
