@@ -50,7 +50,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'isActiveOrganization', 'imageAuthenticate']);
+            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email','address', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
