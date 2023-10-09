@@ -4,21 +4,44 @@ import {
   ResponseStatus,
 } from "../../../shared/response/response.payload";
 import { PostRepository } from "../repository/post/post.repository";
+import { UserRepository } from "../repository/user/user.repository";
 
 
 
 export class PostService {
   private readonly postRepository!: PostRepository;
+  private readonly userRepository!: UserRepository;
 
   constructor() {
     this.postRepository = new PostRepository();
+    this.userRepository = new UserRepository();
   }
 
   async savePost(_post: any) {
     try {
       const postSave = await this.postRepository.savePost(_post);
-      if (postSave)
-        return postSave;
+      const orgInformationCreatePost : any= await this.userRepository.getExistOrgById(postSave.ownerId);
+      const postInformation = {
+        _id: postSave._id,
+        ownerId: postSave.ownerId,
+        ownerDisplayname: orgInformationCreatePost.fullname,
+        ownerAvatar: orgInformationCreatePost.avatar,
+        address: orgInformationCreatePost.address,
+        updatedAt: postSave.updatedAt,
+        scope: postSave.scope,
+        content:postSave.content,
+        media: postSave.media,
+        numOfComment: postSave.numOfComment,
+        commentUrl:postSave.commentUrl,
+        likes: postSave.likes,
+        numOfLike: postSave.numOfLike,
+        participatedPeople: postSave.participatedPeople 
+      }
+      if (postSave){
+        console.log('ppost save here')
+        return postInformation;
+      }
+        
     } catch (error: any) {
       if (error instanceof PostMustCreateByOrg) {
         throw new PostMustCreateByOrg('PostMustCreateByOrg');

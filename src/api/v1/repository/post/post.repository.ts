@@ -14,9 +14,7 @@ export class PostRepository {
     }
     savePost = async (_post: any) => {
         const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
-        console.log('HERE');
         const userResultType: any = await this.userRepository.getExistOrgById(_post.ownerId);
-        console.log('user result: ' + JSON.stringify(userResultType));
         if (userResultType.type == 'Organization') {
             if(userResultType.isActiveOrganization){
                 const postSave : any= new Post({
