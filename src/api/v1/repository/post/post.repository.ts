@@ -42,7 +42,7 @@ export class PostRepository {
     
                     if (currentDate < expirationDate) {
                         postSave.exprirationDate = expirationDate;
-                        postSave.createdAt = formattedDate;
+                        postSave.createdAt = currentDate;
                     }
                     else {
                         throw new ExpirationDateMustGreaterCurrentDate('ExpirationDateMustGreaterCurrentDate');
@@ -59,7 +59,8 @@ export class PostRepository {
                     postSave.participants= _post.participants;
                 }
                 console.log('Post before save: ' + JSON.stringify(postSave));
-                return postSave.save();
+                postSave.save();
+                return postSave;
             }
             else{
                 throw new OrgNotActive('OrgNotActive');

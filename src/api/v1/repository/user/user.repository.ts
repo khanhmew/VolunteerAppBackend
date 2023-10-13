@@ -53,7 +53,7 @@ export class UserRepository {
             }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email','address', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
-            console.error('Error getting user by ID:', error);
+            console.error('Error getting org by ID:', error);
             throw error;
         }
     }

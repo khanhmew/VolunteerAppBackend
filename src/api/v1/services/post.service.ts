@@ -38,7 +38,6 @@ export class PostService {
         participatedPeople: postSave.participatedPeople 
       }
       if (postSave){
-        console.log('ppost save here'+ orgInformationCreatePost.address);
         return postInformation;
       }
         
