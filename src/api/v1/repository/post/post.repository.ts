@@ -5,13 +5,25 @@ import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 const moment = require('moment');
 
-
 export class PostRepository {
     private readonly userRepository!: UserRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
     }
+
+    checkPostExist = async (_postId: any) => {
+        try {
+            const post = await Post.findOne({
+                _id: _postId
+            });
+            return post;
+        } catch (error) {
+            console.error('Error getting post by ID:', error);
+            throw error;
+        }
+    }
+
     savePost = async (_post: any) => {
         const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
         const userResultType: any = await this.userRepository.getExistOrgById(_post.ownerId);

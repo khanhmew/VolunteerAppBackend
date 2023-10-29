@@ -41,7 +41,7 @@ const IPostSchema: Schema = new Schema(
 
 export default mongoose.model<IPostModel>('Post', IPostSchema);
 
-export const DefaultUserData = (ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, participants: Number) => {
+export const DefaultPostData = (ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, participants: Number) => {
     const iPost: IPost = {
         ownerId: ownerId,
         createdAt: new Date(),

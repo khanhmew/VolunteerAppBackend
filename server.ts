@@ -1,11 +1,13 @@
 // Import dependencies && init serverlication express
 import express, { Application, NextFunction, Request, Response } from 'express';
+import { saveLikeForPost, getTotalLikesForPost } from './src/redis/redisUtils';
 
 import bodyParser from 'body-parser';
 import { serverConfig } from './src/config/server.config';
 import mongoose from 'mongoose';
 import userRoute from './src/api/v1/routes/user.route';
 import authRoute from './src/api/v1/routes/auth.route';
+import postRedis from './src/api/v1/routes/postRedis.route'
 import axios from 'axios';
 import { CORSMiddleware } from './src/middleware/CORS.middleware';
 import { SocketIOServer } from './src/socket/v1/socket-io.server';
@@ -13,6 +15,22 @@ import { ResponseBase, ResponseStatus } from './src/shared/response/response.pay
 
 import { authenticateToken } from './src/middleware/token.middleware';
 import postRoute from './src/api/v1/routes/post.route';
+
+// const newRedis = new Redis({
+//   port: 12586,
+//   host: 'redis-12586.c244.us-east-1-2.ec2.cloud.redislabs.com',
+//   password: 'h0StMgZf2IilbJnKH0gmwYkgQuLET8x4',
+//   connectTimeout: 10000
+// });
+
+// newRedis.set('example_key', 'example_value');
+// newRedis.get('example_key', (err: any, result: any) => {
+//   if (err) {
+//     console.error('Lỗi:', err);
+//   } else {
+//     console.log('Giá trị:', result);
+//   }
+// });
 
 const server: Application = express();
 
@@ -54,6 +72,7 @@ const startHTTPServer = () => {
   routes.use(userRoute);
   routes.use(authRoute);
   routes.use(postRoute);
+  routes.use(postRedis);
 
   // server.use('',  (req: Request, res: Response, next: NextFunction) => {
   //   return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'I need U'));
