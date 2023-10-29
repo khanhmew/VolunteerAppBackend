@@ -18,6 +18,6 @@ export const unlikeForPost = (postId: string, userId: string) => {
   return redisClient.srem(`post_likes:${postId}`, userId);
 };
 
-export const hasUserLikedPost = (postId: string, userId: string) => {
+export const hasUserLikedPost = (postId: any, userId: string) => {
   return redisClient.sismember(`post_likes:${postId}`, userId);
 };

@@ -13,5 +13,6 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // Đặt giới hạn kích thước tệp lên (ví dụ: 10MB)
 });
 
-postRoute.post('/post', authenticateToken, upload.array('images', 5), postControllerInstance.createPost)
+postRoute.post('/post', authenticateToken, upload.array('images', 5), postControllerInstance.createPost);
+postRoute.get('/posts', postControllerInstance.getAllPost)
 export default postRoute;

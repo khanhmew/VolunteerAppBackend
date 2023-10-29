@@ -59,4 +59,26 @@ export class PostService {
       }
     }
   }
+  async getAllPost(page: any, limit: any) {
+    try {
+        const allPosts: any = await this.postRepository.getAllPosts(page, limit);
+        const postsInformation = allPosts.map((post: any) => ({
+            _id: post._id,
+            ownerId: post.ownerId,
+            ownerDisplayname: post.fullname,
+            ownerAvatar: post.avatar,
+            address: post.address,
+            updatedAt: post.updatedAt,
+            scope: post.scope,
+            content: post.content,
+            media: post.media,
+            participatedPeople: post.participatedPeople
+        }));
+        return postsInformation;
+    } catch (error) {
+        console.log('Error when getting all posts:', error);
+        throw error;
+    }
+}
+
 }

@@ -7,10 +7,12 @@ import { authenticateToken } from '../../../middleware/token.middleware';
 import { PostRedisController } from '../controllers/post/postRedis.controller';
 const postRedisControllerInstance = new PostRedisController();
 
-postRedis.post('/like', authenticateToken, postRedisControllerInstance.likeAPost);
+postRedis.post('/post/like', authenticateToken, postRedisControllerInstance.likeAPost);
 
-postRedis.get('/likes/:postId', postRedisControllerInstance.getAllLikePost);
+postRedis.get('/post/likes/:postId', postRedisControllerInstance.getAllLikePost);
 
-postRedis.post('/unlike', authenticateToken,postRedisControllerInstance.unlikeAPost);
+postRedis.put('/post/unlike', authenticateToken,postRedisControllerInstance.unlikeAPost);
+
+postRedis.get('/post/like', authenticateToken,postRedisControllerInstance.checkUserLikePost);
 
 export default postRedis;

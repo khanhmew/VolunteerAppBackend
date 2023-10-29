@@ -83,4 +83,22 @@ export class PostRepository {
         }
 
     }
+
+    getAllPosts = async (page: any, limit: any) => {
+        try {
+          const skip = (page - 1) * limit;
+          
+          const posts = await Post.find()
+            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
+            .skip(skip)
+            .limit(limit);
+      
+          return posts;
+        } catch (error) {
+          console.error('Error getting all posts:', error);
+          throw error;
+        }
+    }
+      
+      
 }

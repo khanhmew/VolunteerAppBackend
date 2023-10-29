@@ -22,24 +22,35 @@ export class PostRedisController {
     }
 
     likeAPost = async (req: Request, res: Response, next: NextFunction) => {
-        const userIdLikePost = req.user.userId;
+        const usernameLikePost = req.user.username;
         const { postId } = req.body;
         if (!isValidObjectId(postId)) {
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Invalid postId', null));
         }
         const checkPostExist = await this.postRepository.checkPostExist(postId);
         console.log(checkPostExist)
-        if (!userIdLikePost)
+        if (!usernameLikePost)
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'You must authenticate!', null));
         if (!checkPostExist)
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Post not exist', null));
-        saveLikeForPost(postId, userIdLikePost)
-            .then(() => {
-                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Like success', null));
+        hasUserLikedPost(postId, usernameLikePost)
+            .then((result) => {
+                if (result === 1) {
+                    return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'User like this post before', null));
+                } else {
+                    saveLikeForPost(postId, usernameLikePost)
+                        .then(() => {
+                            return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Like success', null));
+                        })
+                        .catch((error: any) => {
+                            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Like fail', error));
+                        });
+                }
             })
-            .catch((error: any) => {
-                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Like fail', error));
+            .catch((error) => {
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Error when check user like post', error));
             });
+
     }
     getAllLikePost = async (req: Request, res: Response, next: NextFunction) => {
         const postId = req.params.postId;
@@ -57,21 +68,21 @@ export class PostRedisController {
             });
     }
     unlikeAPost = async (req: Request, res: Response, next: NextFunction) => {
-        const userId = req.user.userId;
+        const usernameLikePost = req.user.username;
         const { postId } = req.body;
         if (!isValidObjectId(postId)) {
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Invalid postId', null));
         }
         const checkPostExist = await this.postRepository.checkPostExist(postId);
-        console.log(checkPostExist)
-        if (!userId)
+        // console.log(checkPostExist)
+        if (!usernameLikePost)
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'You must authenticate!', null));
         if (!checkPostExist)
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Post not exist', null));
-        hasUserLikedPost(postId, userId)
+        hasUserLikedPost(postId, usernameLikePost)
             .then((result) => {
                 if (result === 1) {
-                    unlikeForPost(postId, userId)
+                    unlikeForPost(postId, usernameLikePost)
                         .then(() => {
                             return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Unlike success', null));
                         })
@@ -84,6 +95,30 @@ export class PostRedisController {
             })
             .catch((error) => {
                 return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Error when check user like post', null));
+            });
+    }
+
+    checkUserLikePost = async (req: Request, res: Response, next: NextFunction) => {
+        const usernameLikePost = req.user.username;
+        const postId = req.query.postId;
+        if (!isValidObjectId(postId)) {
+            return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Invalid postId', null));
+        }
+        const checkPostExist = await this.postRepository.checkPostExist(postId);
+        if (!usernameLikePost)
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'You must authenticate!', null));
+        if (!checkPostExist)
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Post not exist', null));
+        hasUserLikedPost(postId, usernameLikePost)
+            .then((result) => {
+                if (result === 1) {
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'User like this post before', null));
+                } else {
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'User not like this post before', null));
+                }
+            })
+            .catch((error) => {
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Error when check user like post', error));
             });
     }
 }
