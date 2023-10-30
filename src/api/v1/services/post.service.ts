@@ -20,7 +20,7 @@ export class PostService {
   async savePost(_post: any) {
     try {
       const postSave = await this.postRepository.savePost(_post);
-      const orgInformationCreatePost : any= await this.userRepository.getExistOrgById(postSave.ownerId);
+      const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(postSave.ownerId);
       const postInformation = {
         _id: postSave._id,
         ownerId: postSave.ownerId,
@@ -29,18 +29,18 @@ export class PostService {
         address: orgInformationCreatePost.address,
         updatedAt: postSave.updatedAt,
         scope: postSave.scope,
-        content:postSave.content,
+        content: postSave.content,
         media: postSave.media,
         numOfComment: postSave.numOfComment,
-        commentUrl:postSave.commentUrl,
+        commentUrl: postSave.commentUrl,
         likes: postSave.likes,
         numOfLike: postSave.numOfLike,
-        participatedPeople: postSave.participatedPeople 
+        participatedPeople: postSave.participatedPeople
       }
-      if (postSave){
+      if (postSave) {
         return postInformation;
       }
-        
+
     } catch (error: any) {
       if (error instanceof PostMustCreateByOrg) {
         throw new PostMustCreateByOrg('PostMustCreateByOrg');
@@ -61,24 +61,48 @@ export class PostService {
   }
   async getAllPost(page: any, limit: any) {
     try {
-        const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-        const postsInformation = allPosts.map((post: any) => ({
-            _id: post._id,
-            ownerId: post.ownerId,
-            ownerDisplayname: post.fullname,
-            ownerAvatar: post.avatar,
-            address: post.address,
-            updatedAt: post.updatedAt,
-            scope: post.scope,
-            content: post.content,
-            media: post.media,
-            participatedPeople: post.participatedPeople
-        }));
-        return postsInformation;
+      const allPosts: any = await this.postRepository.getAllPosts(page, limit);
+      const postsInformation = allPosts.map((post: any) => ({
+        _id: post._id,
+        ownerId: post.ownerId,
+        ownerDisplayname: post.fullname,
+        ownerAvatar: post.avatar,
+        address: post.address,
+        updatedAt: post.updatedAt,
+        createdAt: post.createdAt,
+        scope: post.scope,
+        content: post.content,
+        media: post.media,
+        participatedPeople: post.participatedPeople
+      }));
+      return postsInformation;
     } catch (error) {
-        console.log('Error when getting all posts:', error);
-        throw error;
+      console.log('Error when getting all posts:', error);
+      throw error;
     }
-}
+  }
+  
+  async getAllPostByOrg(orgId: any,page: any, limit: any) {
+    try {
+      const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId,page, limit);
+      const postsInformation = allPosts.map((post: any) => ({
+        _id: post._id,
+        ownerId: post.ownerId,
+        ownerDisplayname: post.fullname,
+        ownerAvatar: post.avatar,
+        address: post.address,
+        updatedAt: post.updatedAt,
+        createdAt: post.createdAt,
+        scope: post.scope,
+        content: post.content,
+        media: post.media,
+        participatedPeople: post.participatedPeople
+      }));
+      return postsInformation;
+    } catch (error) {
+      console.log('Error when getting all posts:', error);
+      throw error;
+    }
+  }
 
 }

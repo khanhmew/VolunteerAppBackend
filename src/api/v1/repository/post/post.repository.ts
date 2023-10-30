@@ -100,5 +100,17 @@ export class PostRepository {
         }
     }
       
-      
+    async getAllPostsByOrg(orgId: any, page: any, limit: any) {
+        try {
+          const posts = await Post.find({ ownerId: orgId })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+          return posts;
+        } catch (error) {
+          console.error('Error when getting posts by org ID:', error);
+          throw error;
+        }
+      }  
 }
