@@ -1,6 +1,7 @@
 import mongoose, { Document, ObjectId, Schema } from 'mongoose';
 
 export interface IPost {
+    type: String,
     ownerId: String,
     createdAt: Date,
     updatedAt: Date,
@@ -20,6 +21,7 @@ export interface IPostModel extends IPost, Document { }
 
 const IPostSchema: Schema = new Schema(
     {
+        type: {type: String, require: true},
         ownerId: {type: String, required: true},
         createdAt: {type: Date, required: false},
         updatedAt: {type: Date, require: false},
@@ -41,8 +43,9 @@ const IPostSchema: Schema = new Schema(
 
 export default mongoose.model<IPostModel>('Post', IPostSchema);
 
-export const DefaultPostData = (ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, participants: Number) => {
+export const DefaultPostData = (type: String,ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, participants: Number) => {
     const iPost: IPost = {
+        type: type,
         ownerId: ownerId,
         createdAt: new Date(),
         updatedAt: new Date(),

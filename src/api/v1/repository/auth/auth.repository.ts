@@ -39,8 +39,6 @@ export class AuthRepository {
               imageAuthenticate: user.imageAuthenticate,
               isActiveOrganization: user.isActiveOrganization
             };
-            console.log('orgResult: ' + JSON.stringify(orgResult));
-
             return {orgResult, accessToken, refreshToken };
           }
           else{

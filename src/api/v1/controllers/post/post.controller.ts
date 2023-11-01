@@ -22,6 +22,7 @@ export class PostController {
     try {
       const newPost: any = {
         ownerId: req.user.userId,
+        type: req.body.type,
         exprirationDate: req.body.exprirationDate,
         scope: req.body.scope,
         content: req.body.content,

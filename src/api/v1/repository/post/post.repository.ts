@@ -31,6 +31,7 @@ export class PostRepository {
             if(userResultType.isActiveOrganization){
                 const postSave : any= new Post({
                     _id: new mongoose.Types.ObjectId(),
+                    type: _post.type,
                     ownerId: _post.ownerId,
                     updatedAt: new Date(),
                     scope: _post.scope,

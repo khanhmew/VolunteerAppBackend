@@ -23,6 +23,7 @@ export class PostService {
       const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(postSave.ownerId);
       const postInformation = {
         _id: postSave._id,
+        type: postSave.type,
         ownerId: postSave.ownerId,
         ownerDisplayname: orgInformationCreatePost.fullname,
         ownerAvatar: orgInformationCreatePost.avatar,
@@ -64,6 +65,7 @@ export class PostService {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
       const postsInformation = allPosts.map((post: any) => ({
         _id: post._id,
+        type: post.type,
         ownerId: post.ownerId,
         ownerDisplayname: post.fullname,
         ownerAvatar: post.avatar,
@@ -87,6 +89,7 @@ export class PostService {
       const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId,page, limit);
       const postsInformation = allPosts.map((post: any) => ({
         _id: post._id,
+        type: post.type,
         ownerId: post.ownerId,
         ownerDisplayname: post.fullname,
         ownerAvatar: post.avatar,
