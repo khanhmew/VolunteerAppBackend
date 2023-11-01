@@ -50,7 +50,7 @@ export class PostRepository {
                     const year = currentDate.getFullYear(); // Lấy năm
                     const formattedDate = `${day}-${month}-${year}`;
     
-                    console.log("Ngày/tháng/năm hiện tại:", formattedDate);
+                    // console.log("Ngày/tháng/năm hiện tại:", formattedDate);
                     const expirationDate = moment(_post.exprirationDate, 'DD-MM-YYYY').toDate(); // Chuyển đổi ngày hết hạn sang đối tượng Date
     
                     if (currentDate < expirationDate) {
@@ -71,7 +71,7 @@ export class PostRepository {
                 else{
                     postSave.participants= _post.participants;
                 }
-                console.log('Post before save: ' + JSON.stringify(postSave));
+                // console.log('Post before save: ' + JSON.stringify(postSave));
                 postSave.save();
                 return postSave;
             }

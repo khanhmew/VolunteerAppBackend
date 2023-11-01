@@ -2,6 +2,7 @@ import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import { Readable } from 'stream';
+import sharp from 'sharp';
 
 const admin = require('firebase-admin');
 const serviceAccount = require('../../../config/firebase/serviceAccountKey.json');
@@ -49,8 +50,8 @@ export const uploadImageToFirebase = async (
 
 export const uploadImageFromFormData = async (fileData: any, remoteFileName: any) => {
   return new Promise(async (resolve, reject) => {
-    console.log('This avatar has: ' + fileData.size);
-    console.log('Content-Type:', fileData.mimetype);
+    // console.log('This avatar has: ' + fileData.size);
+    // console.log('Content-Type:', fileData.mimetype);
 
     const file = bucket.file(remoteFileName);
     const stream = file.createWriteStream({
@@ -75,3 +76,34 @@ export const uploadImageFromFormData = async (fileData: any, remoteFileName: any
     stream.end(fileData.buffer);
   });
 };
+
+export const uploadAndProcessImage = async (fileData: any, remoteFileName: any) => {
+  try {
+    // Giảm dung lượng hình ảnh trước khi tải lên
+    const processedImageBuffer = await sharp(fileData.buffer)
+      .resize({ width: 800 }) // Điều chỉnh kích thước (width: 800 pixel, tự điều chỉnh tỷ lệ chiều cao)
+      .jpeg({ quality: 70 }) // Nén hình ảnh sang định dạng JPEG với chất lượng 70%
+      .toBuffer();
+    const imageUrl = await uploadImageFromFormData(
+      {
+        buffer: processedImageBuffer,
+        size: processedImageBuffer.length,
+        mimetype: 'image/jpeg',
+      },
+      remoteFileName
+    );
+
+    return imageUrl;
+  } catch (error) {
+    console.error('Error processing and uploading image:', error);
+    throw error;
+  }
+};
+
+
+export const getImageSize = async (imageUrl: any) => {
+  const response = await fetch(imageUrl, { method: 'HEAD' });
+  return parseInt(response.headers.get('content-length') || 'N/A');
+};
+
+
