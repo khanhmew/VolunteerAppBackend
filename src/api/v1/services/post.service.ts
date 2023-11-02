@@ -67,19 +67,22 @@ export class PostService {
   async getAllPost(page: any, limit: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-      const postsInformation = allPosts.map((post: any) => ({
-        _id: post._id,
-        type: post.type,
-        ownerId: post.ownerId,
-        ownerDisplayname: post.fullname,
-        ownerAvatar: post.avatar,
-        address: post.address,
-        updatedAt: post.updatedAt,
-        createdAt: post.createdAt,
-        scope: post.scope,
-        content: post.content,
-        media: post.media,
-        participatedPeople: post.participatedPeople
+      const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
+        const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+        return {
+          _id: post._id,
+          type: post.type,
+          ownerId: post.ownerId,
+          ownerDisplayname: orgInformationCreatePost.fullname,
+          ownerAvatar: orgInformationCreatePost.avatar,
+          address: orgInformationCreatePost.address,
+          updatedAt: post.updatedAt,
+          createdAt: post.createdAt,
+          scope: post.scope,
+          content: post.content,
+          media: post.media,
+          participatedPeople: post.participatedPeople,
+        };
       }));
       return postsInformation;
     } catch (error) {
@@ -87,23 +90,26 @@ export class PostService {
       throw error;
     }
   }
-  
-  async getAllPostByOrg(orgId: any,page: any, limit: any) {
+
+  async getAllPostByOrg(orgId: any, page: any, limit: any) {
     try {
-      const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId,page, limit);
-      const postsInformation = allPosts.map((post: any) => ({
-        _id: post._id,
-        type: post.type,
-        ownerId: post.ownerId,
-        ownerDisplayname: post.fullname,
-        ownerAvatar: post.avatar,
-        address: post.address,
-        updatedAt: post.updatedAt,
-        createdAt: post.createdAt,
-        scope: post.scope,
-        content: post.content,
-        media: post.media,
-        participatedPeople: post.participatedPeople
+      const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId, page, limit);
+      const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
+        const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+        return {
+          _id: post._id,
+          type: post.type,
+          ownerId: post.ownerId,
+          ownerDisplayname: orgInformationCreatePost.fullname,
+          ownerAvatar: orgInformationCreatePost.avatar,
+          address: orgInformationCreatePost.address,
+          updatedAt: post.updatedAt,
+          createdAt: post.createdAt,
+          scope: post.scope,
+          content: post.content,
+          media: post.media,
+          participatedPeople: post.participatedPeople,
+        };
       }));
       return postsInformation;
     } catch (error) {

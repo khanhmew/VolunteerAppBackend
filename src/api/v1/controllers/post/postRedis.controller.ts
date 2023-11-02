@@ -58,8 +58,9 @@ export class PostRedisController {
             return res.status(400).json({ error: 'Invalid postId' });
         }
         getTotalLikesForPost(postId)
-            .then((totalLikes: any) => {
-                const totalUserLike = { totalLikes };
+            .then((likes: any) => {
+                const totalLikes = likes.length;
+                const totalUserLike = { likes , totalLikes};
                 return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', totalUserLike));
             })
             .catch((error: any) => {
