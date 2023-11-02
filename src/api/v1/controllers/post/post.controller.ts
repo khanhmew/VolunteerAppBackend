@@ -86,7 +86,7 @@ export class PostController {
 
   getAllPostById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const postId = req.params.postId;
+      const postId = req.params.orgId;
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;      
       const posts = await this.postServiceInstance.getAllPostByOrg(postId, page, limit);

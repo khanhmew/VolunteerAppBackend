@@ -11,10 +11,8 @@ export interface IPost {
     media: Array<String>,
     numOfComment: Number,
     commentUrl: String,
-    numOfLike: Number,
-    likes: Array<ObjectId>,
-    participants: Number,
-    participatedPeople: Array<ObjectId>
+    activityId: String,
+    fundId: String
 }
 
 export interface IPostModel extends IPost, Document { }
@@ -31,10 +29,8 @@ const IPostSchema: Schema = new Schema(
         media: {type: Array<String>, require: false},
         numOfComment: {type: Number, require: false},
         commentUrl: {type: String, require: false},
-        numOfLike: {type: Number, require: false},
-        likes: {type: Array<ObjectId>, require: false},
-        participants: {type: Number, require: true},
-        participatedPeople: {type: Number, require: false}
+        activityId: {type: String, require: false},
+        fundId: {type: String, require: false}
     },
     {
         versionKey: false
@@ -43,7 +39,7 @@ const IPostSchema: Schema = new Schema(
 
 export default mongoose.model<IPostModel>('Post', IPostSchema);
 
-export const DefaultPostData = (type: String,ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, participants: Number) => {
+export const DefaultPostData = (type: String,ownerId: String, exprirationDate: Date, scope: String, content: String, media: Array<String>, activityId: String, fundId: String) => {
     const iPost: IPost = {
         type: type,
         ownerId: ownerId,
@@ -55,10 +51,8 @@ export const DefaultPostData = (type: String,ownerId: String, exprirationDate: D
         media: media,
         numOfComment: 0,
         commentUrl: '',
-        numOfLike: 0,
-        likes: [],
-        participants: participants,
-        participatedPeople: []
+        activityId: activityId,
+        fundId: fundId,
     }
     return iPost;
 }

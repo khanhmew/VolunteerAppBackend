@@ -1,8 +1,10 @@
 import express from 'express';
 import { PostController } from '../controllers/post/post.controller';
+import { ActivityController } from '../controllers/post/activity.controller'
 import { authenticateToken } from '../../../middleware/token.middleware';
 const postRoute = express.Router();
 const postControllerInstance = new PostController();
+const activityControllerInstance = new ActivityController();
 
 const multer = require('multer');
 
@@ -15,5 +17,10 @@ const upload = multer({
 
 postRoute.post('/post', authenticateToken, upload.array('images', 5), postControllerInstance.createPost);
 postRoute.get('/posts', postControllerInstance.getAllPost)
-postRoute.get('/posts/:postId', postControllerInstance.getAllPostById)
+postRoute.get('/posts/:orgId', postControllerInstance.getAllPostById)
+
+
+//#region Activity
+postRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
+//#endregion
 export default postRoute;

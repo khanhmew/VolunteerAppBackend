@@ -3,6 +3,7 @@ import {
   ResponseBase,
   ResponseStatus,
 } from "../../../shared/response/response.payload";
+import { ActivityRepository } from "../repository/activity/activity.repository";
 import { PostRepository } from "../repository/post/post.repository";
 import { UserRepository } from "../repository/user/user.repository";
 
@@ -11,16 +12,19 @@ import { UserRepository } from "../repository/user/user.repository";
 export class PostService {
   private readonly postRepository!: PostRepository;
   private readonly userRepository!: UserRepository;
+  private readonly activityRepository!: ActivityRepository;
 
   constructor() {
     this.postRepository = new PostRepository();
     this.userRepository = new UserRepository();
+    this.activityRepository = new ActivityRepository();
   }
 
   async savePost(_post: any) {
     try {
       const postSave = await this.postRepository.savePost(_post);
       const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(postSave.ownerId);
+      const activityInformation: any = await this.activityRepository.getActivityById(postSave.activityId);
       const postInformation = {
         _id: postSave._id,
         type: postSave.type,
@@ -32,11 +36,11 @@ export class PostService {
         scope: postSave.scope,
         content: postSave.content,
         media: postSave.media,
+        activityId: postSave.activityId,
         numOfComment: postSave.numOfComment,
         commentUrl: postSave.commentUrl,
-        likes: postSave.likes,
-        numOfLike: postSave.numOfLike,
-        participatedPeople: postSave.participatedPeople
+        participatedPeople: [],
+        participants: activityInformation.participants
       }
       if (postSave) {
         return postInformation;

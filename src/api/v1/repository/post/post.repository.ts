@@ -1,15 +1,19 @@
 import mongoose from 'mongoose';
-import Post, { IPost } from '../post/post.entity';
+import Post from '../post/post.entity';
+import Activity from '../activity/activity.entity';
 import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
+import { ActivityRepository } from '../activity/activity.repository';
 const moment = require('moment');
 
 export class PostRepository {
     private readonly userRepository!: UserRepository;
+    private readonly activityRepository!: ActivityRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
+        this.activityRepository = new ActivityRepository();
     }
 
     checkPostExist = async (_postId: any) => {
@@ -27,6 +31,7 @@ export class PostRepository {
     savePost = async (_post: any) => {
         const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
         const userResultType: any = await this.userRepository.getExistOrgById(_post.ownerId);
+        const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(_post.ownerId);
         if (userResultType.type == 'Organization') {
             if(userResultType.isActiveOrganization){
                 const postSave : any= new Post({
@@ -39,9 +44,6 @@ export class PostRepository {
                     media: _post.media,
                     numOfComment: 0,
                     commentUrl: '',
-                    likes: [],
-                    numOfLike: 0,
-                    participatedPeople: 0
                 })
                 if (dateRegex.test(_post.exprirationDate.toString()) && moment(_post.exprirationDate, 'DD-MM-YYYY', true).isValid()) {
                     const currentDate = new Date(); // Lấy thời gian hiện tại
@@ -64,15 +66,29 @@ export class PostRepository {
                 else {
                     throw new DateFormat('DateFormat');
                 }
-                const participants: number = _post.participants as number; // Ép kiểu _post.participants thành kiểu number
-                if (participants <= 0) {
-                    throw new ParticipantsMustGreaterThan0('ParticipantsMustGreaterThan0');
+                await postSave.save();
+                //#region POST TYPE -> CREATE POST 
+                if(postSave.type.toLowerCase() == 'activity'){
+                    const activityCreate = new Activity({
+                        postId: postSave,
+                        address: orgInformationCreatePost.address,
+                        participatedPeople: []
+                    })
+
+                    //_post.participants: là body nhận vào -> lưu vào bảng activites
+                    const participants: number = _post.participants as number; // Ép kiểu _post.participants thành kiểu number
+                    if (participants <= 0) {
+                        throw new ParticipantsMustGreaterThan0('ParticipantsMustGreaterThan0');
+                    }
+                    else{
+                        activityCreate.participants= _post.participants;
+                    }
+                    
+                    const activityResultCreate = await this.activityRepository.createNewActivity(activityCreate);
+                    postSave.activityId = activityResultCreate._id;
+                    await postSave.save();
                 }
-                else{
-                    postSave.participants= _post.participants;
-                }
-                // console.log('Post before save: ' + JSON.stringify(postSave));
-                postSave.save();
+                 //#endregion POST TYPE
                 return postSave;
             }
             else{
