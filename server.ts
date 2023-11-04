@@ -68,6 +68,7 @@ const startHTTPServer = () => {
 
   // Configure routes
   server.use(CORSMiddleware);
+  const url = serverConfig.api.path;
   server.use(serverConfig.api.path, routes);
   routes.use(userRoute);
   routes.use(authRoute);
@@ -81,7 +82,7 @@ const startHTTPServer = () => {
 
   const port = serverConfig.server.port;
   server.listen(port, () => {
-    console.log(`⚡️ [server]: Server is running at: http://localhost:${port}`);
+    console.log(`⚡️ [server]: Server is running at: http://127.0.0.1:${port}`);
   });
 
   async function getIP() {

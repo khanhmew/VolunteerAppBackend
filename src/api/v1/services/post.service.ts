@@ -67,6 +67,7 @@ export class PostService {
   async getAllPost(page: any, limit: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
+      
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
         return {
@@ -82,6 +83,7 @@ export class PostService {
           content: post.content,
           media: post.media,
           participatedPeople: post.participatedPeople,
+          activityId: post.activityId
         };
       }));
       return postsInformation;
@@ -109,6 +111,7 @@ export class PostService {
           content: post.content,
           media: post.media,
           participatedPeople: post.participatedPeople,
+          activityId: post.activityId
         };
       }));
       return postsInformation;
