@@ -123,5 +123,13 @@ export class PostService {
       throw error;
     }
   }
-
+  async getDetaiPost(_postId: any) {
+    try {
+      const post: any = await this.postRepository.getDetailPost(_postId);
+      return post;
+    } catch (error) {
+      console.log('Error when getting detail post:', error);
+      throw error;
+    }
+  }
 }

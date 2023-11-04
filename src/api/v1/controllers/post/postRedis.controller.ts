@@ -7,13 +7,6 @@ import { PostRepository } from "../../repository/post/post.repository";
 import { getTotalLikesForPost, hasUserLikedPost, saveLikeForPost, unlikeForPost } from "../../../../redis/redisUtils";
 import { isValidObjectId } from "mongoose";
 
-declare global {
-    namespace Express {
-        interface Request {
-            files?: any
-        }
-    }
-}
 export class PostRedisController {
     private readonly postRepository!: PostRepository;
 

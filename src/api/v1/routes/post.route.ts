@@ -18,7 +18,7 @@ const upload = multer({
 postRoute.post('/post', authenticateToken, upload.array('images', 5), postControllerInstance.createPost);
 postRoute.get('/posts', postControllerInstance.getAllPost)
 postRoute.get('/posts/:orgId', postControllerInstance.getAllPostById)
-
+postRoute.get('/post/:postId', postControllerInstance.getDetailPost)
 
 //#region Activity
 postRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)

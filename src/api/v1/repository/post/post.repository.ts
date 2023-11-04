@@ -5,6 +5,7 @@ import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';
+import { getTotalLikesForPost } from '../../../../redis/redisUtils';
 const moment = require('moment');
 
 export class PostRepository {
@@ -33,8 +34,8 @@ export class PostRepository {
         const userResultType: any = await this.userRepository.getExistOrgById(_post.ownerId);
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(_post.ownerId);
         if (userResultType.type == 'Organization') {
-            if(userResultType.isActiveOrganization){
-                const postSave : any= new Post({
+            if (userResultType.isActiveOrganization) {
+                const postSave: any = new Post({
                     _id: new mongoose.Types.ObjectId(),
                     type: _post.type,
                     ownerId: _post.ownerId,
@@ -51,10 +52,10 @@ export class PostRepository {
                     const month = currentDate.getMonth() + 1; // Lấy tháng (lưu ý: tháng trong JavaScript bắt đầu từ 0)
                     const year = currentDate.getFullYear(); // Lấy năm
                     const formattedDate = `${day}-${month}-${year}`;
-    
+
                     // console.log("Ngày/tháng/năm hiện tại:", formattedDate);
                     const expirationDate = moment(_post.exprirationDate, 'DD-MM-YYYY').toDate(); // Chuyển đổi ngày hết hạn sang đối tượng Date
-    
+
                     if (currentDate < expirationDate) {
                         postSave.exprirationDate = expirationDate;
                         postSave.createdAt = currentDate;
@@ -68,7 +69,7 @@ export class PostRepository {
                 }
                 await postSave.save();
                 //#region POST TYPE -> CREATE POST 
-                if(postSave.type.toLowerCase() == 'activity'){
+                if (postSave.type.toLowerCase() == 'activity') {
                     const activityCreate = new Activity({
                         postId: postSave,
                         address: orgInformationCreatePost.address,
@@ -80,18 +81,18 @@ export class PostRepository {
                     if (participants <= 0) {
                         throw new ParticipantsMustGreaterThan0('ParticipantsMustGreaterThan0');
                     }
-                    else{
-                        activityCreate.participants= _post.participants;
+                    else {
+                        activityCreate.participants = _post.participants;
                     }
-                    
+
                     const activityResultCreate = await this.activityRepository.createNewActivity(activityCreate);
                     postSave.activityId = activityResultCreate._id;
                     await postSave.save();
                 }
-                 //#endregion POST TYPE
+                //#endregion POST TYPE
                 return postSave;
             }
-            else{
+            else {
                 throw new OrgNotActive('OrgNotActive');
             }
         }
@@ -103,31 +104,71 @@ export class PostRepository {
 
     getAllPosts = async (page: any, limit: any) => {
         try {
-          const skip = (page - 1) * limit;
-          
-          const posts = await Post.find()
-            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
-            .skip(skip)
-            .limit(limit);
-      
-          return posts;
+            const skip = (page - 1) * limit;
+
+            const posts = await Post.find()
+                .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
+                .skip(skip)
+                .limit(limit);
+
+            return posts;
         } catch (error) {
-          console.error('Error getting all posts:', error);
-          throw error;
+            console.error('Error getting all posts:', error);
+            throw error;
         }
     }
-      
+
     async getAllPostsByOrg(orgId: any, page: any, limit: any) {
         try {
-          const posts = await Post.find({ ownerId: orgId })
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .exec();
-          return posts;
+            const posts = await Post.find({ ownerId: orgId })
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .exec();
+            return posts;
         } catch (error) {
-          console.error('Error when getting posts by org ID:', error);
-          throw error;
+            console.error('Error when getting posts by org ID:', error);
+            throw error;
         }
-      }  
+    }
+
+    getDetailPost= async(_postId: any) =>  {
+        try {
+            const post : any = await Post.findOne({ _id: _postId });
+            const activityResult : any= await this.activityRepository.getActivityById(post.activityId);
+            const orgInformationPost : any= await this.userRepository.getExistOrgById(post.ownerId);
+    
+            const postDetail : any= {
+                _id: post._id,
+                type: post.type,
+                ownerId: post.ownerId,
+                ownerDisplayname: orgInformationPost.fullname,
+                ownerAvatar: orgInformationPost.avatar,
+                address: orgInformationPost.address,
+                updatedAt: post.updatedAt,
+                exprirationDate: post.exprirationDate,
+                scope: post.scope,
+                content: post.content,
+                media: post.media,
+                activityId: post.activityId,
+                numOfComment: post.numOfComment,
+                commentUrl: post.commentUrl,
+                participatedPeople: [],
+                participants: activityResult.participants,
+                likes: [],
+                totalLikes: 0
+            };
+    
+            const likes = await getTotalLikesForPost(_postId); // Await the total likes
+    
+            postDetail.likes = likes;
+            postDetail.totalLikes = likes.length;
+    
+            return postDetail;
+        } catch (error) {
+            console.error('Error:', error);
+            throw error; // You should handle or propagate the error as needed
+        }
+    }
+    
 }

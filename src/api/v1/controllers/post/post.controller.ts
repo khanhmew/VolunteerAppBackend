@@ -99,4 +99,15 @@ export class PostController {
       return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
     }
   }
+
+  getDetailPost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const postIdForGet = req.params.postId;
+      const postDetail = await this.postServiceInstance.getDetaiPost(postIdForGet);
+      res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', postDetail));
+    } catch (error) {
+      console.error('Error getting posts:', error);
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+    }
+  }
 }
