@@ -33,6 +33,7 @@ export class PostService {
         ownerAvatar: orgInformationCreatePost.avatar,
         address: orgInformationCreatePost.address,
         updatedAt: postSave.updatedAt,
+        exprirationDate: postSave.exprirationDate,
         scope: postSave.scope,
         content: postSave.content,
         media: postSave.media,
@@ -83,7 +84,8 @@ export class PostService {
           content: post.content,
           media: post.media,
           participatedPeople: post.participatedPeople,
-          activityId: post.activityId
+          activityId: post.activityId,
+          exprirationDate: post.exprirationDate
         };
       }));
       return postsInformation;
@@ -111,7 +113,8 @@ export class PostService {
           content: post.content,
           media: post.media,
           participatedPeople: post.participatedPeople,
-          activityId: post.activityId
+          activityId: post.activityId,
+          exprirationDate: post.exprirationDate
         };
       }));
       return postsInformation;
