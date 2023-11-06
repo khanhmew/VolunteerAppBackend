@@ -132,39 +132,73 @@ export class PostRepository {
         }
     }
 
-    getDetailPost= async(_postId: any) =>  {
+    getDetailPost= async(_postId: any, _userId: any) =>  {
         try {
             const post : any = await Post.findOne({ _id: _postId });
             const activityResult : any= await this.activityRepository.getActivityById(post.activityId);
             const orgInformationPost : any= await this.userRepository.getExistOrgById(post.ownerId);
-    
-            const postDetail : any= {
-                _id: post._id,
-                type: post.type,
-                ownerId: post.ownerId,
-                ownerDisplayname: orgInformationPost.fullname,
-                ownerAvatar: orgInformationPost.avatar,
-                address: orgInformationPost.address,
-                updatedAt: post.updatedAt,
-                exprirationDate: post.exprirationDate,
-                scope: post.scope,
-                content: post.content,
-                media: post.media,
-                activityId: post.activityId,
-                numOfComment: post.numOfComment,
-                commentUrl: post.commentUrl,
-                participatedPeople: [],
-                participants: activityResult.participants,
-                likes: [],
-                totalLikes: 0
-            };
-    
-            const likes = await getTotalLikesForPost(_postId); // Await the total likes
-    
-            postDetail.likes = likes;
-            postDetail.totalLikes = likes.length;
-    
-            return postDetail;
+            
+            if(_userId == ''){
+                const postDetail : any= {
+                    _id: post._id,
+                    type: post.type,
+                    ownerId: post.ownerId,
+                    ownerDisplayname: orgInformationPost.fullname,
+                    ownerAvatar: orgInformationPost.avatar,
+                    address: orgInformationPost.address,
+                    updatedAt: post.updatedAt,
+                    exprirationDate: post.exprirationDate,
+                    scope: post.scope,
+                    content: post.content,
+                    media: post.media,
+                    activityId: post.activityId,
+                    numOfComment: post.numOfComment,
+                    commentUrl: post.commentUrl,
+                    participatedPeople: [],
+                    participants: activityResult.participants,
+                    likes: [],
+                    totalLikes: 0,
+                };
+        
+                const likes = await getTotalLikesForPost(_postId); // Await the total likes
+        
+                postDetail.likes = likes;
+                postDetail.totalLikes = likes.length;
+        
+                return postDetail;
+            }
+            else{
+                const isJoin: any = await this.activityRepository.isJoined(_userId, post.activityId);
+                const postDetail : any= {
+                    _id: post._id,
+                    type: post.type,
+                    ownerId: post.ownerId,
+                    ownerDisplayname: orgInformationPost.fullname,
+                    ownerAvatar: orgInformationPost.avatar,
+                    address: orgInformationPost.address,
+                    updatedAt: post.updatedAt,
+                    exprirationDate: post.exprirationDate,
+                    scope: post.scope,
+                    content: post.content,
+                    media: post.media,
+                    activityId: post.activityId,
+                    numOfComment: post.numOfComment,
+                    commentUrl: post.commentUrl,
+                    participatedPeople: [],
+                    participants: activityResult.participants,
+                    likes: [],
+                    totalLikes: 0,
+                    isJoin: isJoin
+                };
+        
+                const likes = await getTotalLikesForPost(_postId); // Await the total likes
+        
+                postDetail.likes = likes;
+                postDetail.totalLikes = likes.length;
+        
+                return postDetail;
+            }
+            
         } catch (error) {
             console.error('Error:', error);
             throw error; // You should handle or propagate the error as needed

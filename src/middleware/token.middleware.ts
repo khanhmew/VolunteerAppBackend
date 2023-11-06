@@ -12,20 +12,21 @@ declare global {
     }
   }
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization');
-
-  if (!token) {
-    return ResponseBase(ResponseStatus.FAILURE, 'Unauthorized', null);
-  }
-
-  jwt.verify(token, SECRETKEY, (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid token' });
+  
+    if (token) {
+      jwt.verify(token, SECRETKEY, (err: any, user: any) => {
+        if (err) {
+          return res.status(403).json({ message: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+      });
+    } else {
+      // Không có token, tiếp tục chạy các middleware và xử lý tiếp theo
+      next();
     }
-    req.user = user;
-    
-    next(); 
-  });
-}
+  }
+  
 

@@ -67,6 +67,9 @@ export class ActivityRepository {
       const checkCanJoin = await this.checkMaxParticipants(activityId);
       if(checkCanJoin.success){
         const user = await User.findById(userId);
+        if(user?.type.toLocaleLowerCase() == 'organization'){
+          return {error: 'Organization can not join activity'};
+        }
         const activity = await Activity.findById(activityId);
     
         if (!user || !activity) {
@@ -82,6 +85,23 @@ export class ActivityRepository {
         await activity.save();
         return {success: 'Join success'};
       } 
+  }
+
+  isJoined = async (userId: any, activityId: any) => {
+    try {
+      const user = await User.findById(userId); 
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const activity = await Activity.findById(activityId);
+      if (!activity) {
+        throw new Error('Activity not found');
+      }
+      const isUserJoined = activity.participatedPeople.includes(userId);
+      return isUserJoined;
+    } catch (error) {
+      throw error;
+    }
   }
   
 }

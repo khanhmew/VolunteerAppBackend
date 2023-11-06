@@ -5,7 +5,7 @@ import { uploadImageFromFormData } from "../../services/firebase.service";
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../../shared/error/post.error";
 import { PostRepository } from "../../repository/post/post.repository";
 import { getTotalLikesForPost, hasUserLikedPost, saveLikeForPost, unlikeForPost } from "../../../../redis/redisUtils";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 export class PostRedisController {
     private readonly postRepository!: PostRepository;
@@ -21,7 +21,6 @@ export class PostRedisController {
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Invalid postId', null));
         }
         const checkPostExist = await this.postRepository.checkPostExist(postId);
-        console.log(checkPostExist)
         if (!usernameLikePost)
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'You must authenticate!', null));
         if (!checkPostExist)
@@ -94,7 +93,7 @@ export class PostRedisController {
 
     checkUserLikePost = async (req: Request, res: Response, next: NextFunction) => {
         const usernameLikePost = req.user.username;
-        const postId = req.query.postId;
+        const postId: any = req.params.postId;
         if (!isValidObjectId(postId)) {
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Invalid postId', null));
         }

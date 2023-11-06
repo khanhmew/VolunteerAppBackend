@@ -7,7 +7,6 @@ import { serverConfig } from './src/config/server.config';
 import mongoose from 'mongoose';
 import userRoute from './src/api/v1/routes/user.route';
 import authRoute from './src/api/v1/routes/auth.route';
-import postRedis from './src/api/v1/routes/postRedis.route'
 import axios from 'axios';
 import { CORSMiddleware } from './src/middleware/CORS.middleware';
 import { SocketIOServer } from './src/socket/v1/socket-io.server';
@@ -73,7 +72,6 @@ const startHTTPServer = () => {
   routes.use(userRoute);
   routes.use(authRoute);
   routes.use(postRoute);
-  routes.use(postRedis);
 
   // server.use('',  (req: Request, res: Response, next: NextFunction) => {
   //   return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'I need U'));

@@ -65,12 +65,15 @@ export class PostService {
       }
     }
   }
-  async getAllPost(page: any, limit: any) {
+  async getAllPost(page: any, limit: any, userId: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-      
+  
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+  
+        const isJoin = userId === '' ? undefined : await this.activityRepository.isJoined(userId, post.activityId);
+  
         return {
           _id: post._id,
           type: post.type,
@@ -85,21 +88,27 @@ export class PostService {
           media: post.media,
           participatedPeople: post.participatedPeople,
           activityId: post.activityId,
-          exprirationDate: post.exprirationDate
+          exprirationDate: post.exprirationDate,
+          isJoin,
         };
       }));
+  
       return postsInformation;
     } catch (error) {
       console.log('Error when getting all posts:', error);
       throw error;
     }
   }
-
-  async getAllPostByOrg(orgId: any, page: any, limit: any) {
+  
+  async getAllPostByOrg(userId: any, orgId: any, page: any, limit: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId, page, limit);
+      const isUserLoggedIn = userId !== '';
+  
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+        const isJoin: any = isUserLoggedIn ? await this.activityRepository.isJoined(userId, post.activityId) : undefined;
+  
         return {
           _id: post._id,
           type: post.type,
@@ -114,18 +123,21 @@ export class PostService {
           media: post.media,
           participatedPeople: post.participatedPeople,
           activityId: post.activityId,
-          exprirationDate: post.exprirationDate
+          exprirationDate: post.exprirationDate,
+          isJoin,
         };
       }));
+  
       return postsInformation;
     } catch (error) {
       console.log('Error when getting all posts:', error);
       throw error;
     }
   }
-  async getDetaiPost(_postId: any) {
+  
+  async getDetaiPost(_postId: any, _userId: any) {
     try {
-      const post: any = await this.postRepository.getDetailPost(_postId);
+      const post: any = await this.postRepository.getDetailPost(_postId, _userId);
       return post;
     } catch (error) {
       console.log('Error when getting detail post:', error);

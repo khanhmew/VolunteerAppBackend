@@ -75,8 +75,12 @@ export class PostController {
   getAllPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;      
-      const posts = await this.postServiceInstance.getAllPost(page, limit);
+      const limit = Number(req.query.limit) || 10;   
+      var userIdForCheckJoin ='';
+      if(req.user){
+        userIdForCheckJoin = req.user.userId;
+      } 
+      const posts = await this.postServiceInstance.getAllPost(page, limit, userIdForCheckJoin);
       if(posts.length < 1){
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
@@ -91,8 +95,12 @@ export class PostController {
     try {
       const postId = req.params.orgId;
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;      
-      const posts = await this.postServiceInstance.getAllPostByOrg(postId, page, limit);
+      const limit = Number(req.query.limit) || 10;   
+      var userIdForCheckJoin ='';
+      if(req.user){
+        userIdForCheckJoin = req.user.userId;
+      }   
+      const posts = await this.postServiceInstance.getAllPostByOrg(userIdForCheckJoin, postId, page, limit);
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));
     } catch (error) {
       console.error('Error getting posts:', error);
@@ -103,7 +111,11 @@ export class PostController {
   getDetailPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const postIdForGet = req.params.postId;
-      const postDetail = await this.postServiceInstance.getDetaiPost(postIdForGet);
+      var userIdForCheckJoin ='';
+      if(req.user){
+        userIdForCheckJoin = req.user.userId;
+      }  
+      const postDetail = await this.postServiceInstance.getDetaiPost(postIdForGet, userIdForCheckJoin);
       res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', postDetail));
     } catch (error) {
       console.error('Error getting posts:', error);
