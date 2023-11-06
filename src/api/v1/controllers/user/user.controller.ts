@@ -3,7 +3,7 @@ import { UserService } from "../../services/user.service";
 import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, PasswordFormatError, WrongPasswordError } from "../../../../shared/error/auth.error";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
 import { uploadImageFromFormData } from "../../services/firebase.service";
-import User, { IUser } from "../../repository/user/user.entity";
+import Follow from '../../repository/follow/follow.entity';
 const bcrypt = require('bcrypt');
 
 declare global {
@@ -168,9 +168,8 @@ export class UserController {
         try {
             const adminId = req.user.userId;
             const orgForActive: any = req.query.orgId;
-            const activeResult =await this.userServiceInstance.activeOrganization(adminId, orgForActive); 
-            if(activeResult)
-            {
+            const activeResult = await this.userServiceInstance.activeOrganization(adminId, orgForActive);
+            if (activeResult) {
                 return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Organization is active', null));
             }
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Organization fail to active', null));
@@ -184,6 +183,41 @@ export class UserController {
             }
         }
     }
+    followUser = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const followerId = req.user.userId; 
+            const followingId = req.body.followingId; 
+
+            const followResult = await this.userServiceInstance.followOrg(followerId, followingId);
+            if(followResult.success){
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, followResult.success, {totalFollow: followResult.followersCount}));
+            }
+            else{
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, followResult.error, null));
+            }
+        } catch (error: any) {
+            console.error('Lỗi khi theo dõi người dùng:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    };
+
+    unfollowUser = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const followerId = req.user.userId; 
+            const followingId = req.body.followingId; 
+            const unFollowResult = await this.userServiceInstance.unFollowOrg(followerId, followingId);
+            if(unFollowResult.success){
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, unFollowResult.success,  {totalFollow: unFollowResult.followersCount}));
+            }
+            else{
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, unFollowResult.error, null));
+            }
+        } catch (error: any) {
+            console.error('Lỗi khi bỏ theo dõi người dùng:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    };
+
 }
 
 

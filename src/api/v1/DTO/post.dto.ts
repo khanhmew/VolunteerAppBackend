@@ -14,9 +14,11 @@ export interface PostDTO {
     activityId: string;
     numOfComment: number;
     commentUrl: string;
-    participatedPeople: string[];
+    participatedPeople?: string[];
     participants: number;
-    likes: string[];
-    totalLikes: number;
+    totalUserJoin: number;
+    likes?: string[];
+    totalLikes?: number;
     isJoin?: boolean;
+    isFollow?: boolean
 }

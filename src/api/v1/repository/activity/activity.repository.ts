@@ -83,7 +83,7 @@ export class ActivityRepository {
         activity.participatedPeople.push(user._id);
         activity.numOfPeopleParticipated = activity.participatedPeople.length;
         await activity.save();
-        return {success: 'Join success'};
+        return {success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated};
       } 
   }
 

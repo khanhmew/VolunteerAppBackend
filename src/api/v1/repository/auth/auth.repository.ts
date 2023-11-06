@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import User, { IUser } from '../user/user.entity';
 import { AccountNotFoundError, WrongPasswordError, EmailFormatError, PasswordFormatError, UsernameExistError } from '../../../../shared/error/auth.error';
+import { OrgDTO } from '../../DTO/org.dto';
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -26,7 +27,7 @@ export class AuthRepository {
             expiresIn: '30d', 
           });
           if(user.type.toLowerCase() === 'organization'){
-            const orgResult = {
+            const orgResult : OrgDTO= {
               _id: user._id,
               type: user.type,
               fullname: user.fullname,
@@ -37,7 +38,9 @@ export class AuthRepository {
               address: user.address,
               sex: user.sex,
               imageAuthenticate: user.imageAuthenticate,
-              isActiveOrganization: user.isActiveOrganization
+              isActiveOrganization: user.isActiveOrganization,
+              isFollow: false,
+              follower: 0
             };
             return {orgResult, accessToken, refreshToken };
           }

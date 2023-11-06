@@ -7,15 +7,18 @@ import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, Partici
 import { ActivityRepository } from '../activity/activity.repository';
 import { getTotalLikesForPost } from '../../../../redis/redisUtils';
 import { PostDTO } from '../../DTO/post.dto';
+import { FollowRepository } from '../follow/follow.repository';
 const moment = require('moment');
 
 export class PostRepository {
     private readonly userRepository!: UserRepository;
     private readonly activityRepository!: ActivityRepository;
+    private readonly followRepository!: FollowRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
         this.activityRepository = new ActivityRepository();
+        this.followRepository = new FollowRepository();
     }
 
     checkPostExist = async (_postId: any) => {
@@ -156,10 +159,10 @@ export class PostRepository {
                     activityId: post.activityId,
                     numOfComment: post.numOfComment,
                     commentUrl: post.commentUrl,
-                    participatedPeople: [],
                     participants: activityResult.participants,
                     likes: [],
                     totalLikes: 0,
+                    totalUserJoin: activityResult.participatedPeople.length,
                 };
         
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
@@ -171,6 +174,7 @@ export class PostRepository {
             }
             else{
                 const isJoin: any = await this.activityRepository.isJoined(_userId, post.activityId);
+                const isFollowing = await this.followRepository.isUserFollowingOrg(_userId, post.ownerId);
                 const postDetail : any= {
                     _id: post._id,
                     type: post.type,
@@ -186,11 +190,12 @@ export class PostRepository {
                     activityId: post.activityId,
                     numOfComment: post.numOfComment,
                     commentUrl: post.commentUrl,
-                    participatedPeople: [],
                     participants: activityResult.participants,
                     likes: [],
                     totalLikes: 0,
-                    isJoin: isJoin
+                    isJoin: isJoin,
+                    isFollowing: isFollowing,
+                    totalUserJoin: activityResult.participatedPeople.length,
                 };
         
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes

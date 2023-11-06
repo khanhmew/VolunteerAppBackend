@@ -4,16 +4,17 @@ import {
   ResponseStatus,
 } from "../../../shared/response/response.payload";
 import { UserDomainModel } from "../model/user.domain.model";
+import { FollowRepository } from "../repository/follow/follow.repository";
 import { IUser } from "../repository/user/user.entity";
 import { UserRepository } from "../repository/user/user.repository";
 
 export class UserService {
-  private readonly userDomainModel!: UserDomainModel;
   private readonly userRepository!: UserRepository;
+  private readonly followRepository!: FollowRepository;
 
   constructor() {
-    this.userDomainModel = new UserDomainModel();
     this.userRepository = new UserRepository();
+    this.followRepository = new FollowRepository();
   }
 
   async save(user: any) {
@@ -94,6 +95,23 @@ export class UserService {
       if (error instanceof AccountNotFoundError) {
         throw new AccountNotFoundError('Organization not found');
       }
+    }
+  }
+
+  async followOrg(_followerId: any, _followingId: any){
+    try {
+      const followResult = await this.followRepository.followUser(_followerId, _followingId);
+      return followResult;
+    } catch (error: any) {
+      return error;
+    }
+  }
+  async unFollowOrg(_followerId: any, _followingId: any){
+    try {
+      const unFollowResult = await this.followRepository.unfollowUser(_followerId, _followingId);
+      return unFollowResult;
+    } catch (error: any) {
+      return error;
     }
   }
 }

@@ -27,7 +27,7 @@ export class ActivityController {
             const activityId = req.params.activityId;
             const joinResult: any =await this.activityServiceInstance.joinActivity(userJoinId, activityId);
             if (joinResult.success) {
-                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Join success', null));
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Join success', {totalUserJoin: joinResult.numOfPeopleParticipated}));
             }
             else if(joinResult.error){
                 return res.status(500).json(ResponseBase(ResponseStatus.ERROR, joinResult.error, null));

@@ -5,6 +5,7 @@ import {
 } from "../../../shared/response/response.payload";
 import { PostDTO } from "../DTO/post.dto";
 import { ActivityRepository } from "../repository/activity/activity.repository";
+import { FollowRepository } from "../repository/follow/follow.repository";
 import { PostRepository } from "../repository/post/post.repository";
 import { UserRepository } from "../repository/user/user.repository";
 
@@ -14,11 +15,13 @@ export class PostService {
   private readonly postRepository!: PostRepository;
   private readonly userRepository!: UserRepository;
   private readonly activityRepository!: ActivityRepository;
+  private readonly followRepository!: FollowRepository;
 
   constructor() {
     this.postRepository = new PostRepository();
     this.userRepository = new UserRepository();
     this.activityRepository = new ActivityRepository();
+    this.followRepository = new FollowRepository();
   }
 
   async savePost(_post: any) {
@@ -69,10 +72,10 @@ export class PostService {
   async getAllPost(page: any, limit: any, userId: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-  
+      const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
-  
+        const isUserFollowingOrg = userFollowedOrgs.some((org) => org.followingId == post.ownerId);
         const isJoin = userId === '' ? undefined : await this.activityRepository.isJoined(userId, post.activityId);
   
         const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
@@ -97,6 +100,8 @@ export class PostService {
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
+          isFollow: isUserFollowingOrg,
+          totalUserJoin: activityInformation.participatedPeople.length,
         };
         return postDTO;
       }));
@@ -138,6 +143,7 @@ export class PostService {
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
+          totalUserJoin: activityInformation.participatedPeople.length,
         };
   
         return postDTO;

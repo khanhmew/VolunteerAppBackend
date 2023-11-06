@@ -18,4 +18,10 @@ userRoute.get('/user',authenticateToken, userControllerInstance.getAll);
 userRoute.put('/user', authenticateToken, upload.single('avatar'), userControllerInstance.updateUserProfile);
 userRoute.put('/org/verify', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
 userRoute.put('/org/active', authenticateToken, userControllerInstance.activeOrganiztion)
+
+
+//#region Follow
+userRoute.post('/user/follow', authenticateToken,userControllerInstance.followUser);
+userRoute.post('/user/unfollow', authenticateToken,userControllerInstance.unfollowUser);
+//#endregion
 export default userRoute;
