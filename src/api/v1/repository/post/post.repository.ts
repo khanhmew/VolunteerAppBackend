@@ -106,21 +106,39 @@ export class PostRepository {
 
     }
 
-    getAllPosts = async (page: any, limit: any) => {
+    async getAllPosts(page: any, limit: any, userId: any) {
         try {
             const skip = (page - 1) * limit;
-
-            const posts = await Post.find()
-                .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
+    
+            const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
+    
+            const allPosts = await Post.find()
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-
-            return posts;
+    
+            const postsOfFollowedOrganizations = [];
+            const otherPosts : any= [];
+    
+            // Chia bài viết thành hai mảng riêng biệt
+            allPosts.forEach((post: any) => {
+                if (organizationsUserFollows.includes(post.ownerId.toString())) {
+                    postsOfFollowedOrganizations.push(post);
+                } else {
+                    otherPosts.push(post);
+                }
+            });
+    
+            // Thêm bài viết từ tổ chức bạn đang theo dõi vào đầu mảng tất cả bài viết
+            postsOfFollowedOrganizations.unshift(...otherPosts);
+    
+            return postsOfFollowedOrganizations;
         } catch (error) {
             console.error('Error getting all posts:', error);
             throw error;
         }
     }
+    
 
     async getAllPostsByOrg(orgId: any, page: any, limit: any) {
         try {

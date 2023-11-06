@@ -71,7 +71,7 @@ export class PostService {
   }
   async getAllPost(page: any, limit: any, userId: any) {
     try {
-      const allPosts: any = await this.postRepository.getAllPosts(page, limit);
+      const allPosts: any = await this.postRepository.getAllPosts(page, limit, userId);
       const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
