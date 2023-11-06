@@ -61,6 +61,16 @@ export class FollowRepository {
             return { error: 'Failed to unfollow the user' };
         }
     }
+    async countFollowersOfOrg(orgId: string) {
+        try {
+          const followersCount = await Follow.countDocuments({ followingId: orgId });
+          return followersCount;
+        } catch (error: any) {
+          console.error('Error:', error.message);
+          throw error;
+        }
+      }
+      
 
     async getOrgsFollowedByUser(userId: string) {
         try {

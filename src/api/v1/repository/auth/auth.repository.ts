@@ -2,12 +2,17 @@ import mongoose from 'mongoose';
 import User, { IUser } from '../user/user.entity';
 import { AccountNotFoundError, WrongPasswordError, EmailFormatError, PasswordFormatError, UsernameExistError } from '../../../../shared/error/auth.error';
 import { OrgDTO } from '../../DTO/org.dto';
+import { FollowRepository } from '../follow/follow.repository';
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRETKEY = process.env.SECRETKEY ?? '';
 
 export class AuthRepository {
+  private readonly followRepository!: FollowRepository;
+  constructor() {
+    this.followRepository = new FollowRepository();
+  }
     async authenticate(_username: String, _password: String) {
         try {
           const user = await User.findOne({ username: _username }).exec();;
@@ -27,6 +32,7 @@ export class AuthRepository {
             expiresIn: '30d', 
           });
           if(user.type.toLowerCase() === 'organization'){
+            const totalFollow = await this.followRepository.countFollowersOfOrg(user._id);
             const orgResult : OrgDTO= {
               _id: user._id,
               type: user.type,
@@ -39,8 +45,7 @@ export class AuthRepository {
               sex: user.sex,
               imageAuthenticate: user.imageAuthenticate,
               isActiveOrganization: user.isActiveOrganization,
-              isFollow: false,
-              follower: 0
+              follower: totalFollow,
             };
             return {orgResult, accessToken, refreshToken };
           }
@@ -107,5 +112,43 @@ export class AuthRepository {
         return null;
       }
     }
+
+    async getProfile(orgId: string, userId: string) {
+      try {
+        const user = await User.findById(orgId);
+    
+        if (!user) {
+          throw new AccountNotFoundError('Profile not found');
+        }
+    
+        const profile: any = {
+          _id: user._id,
+          type: user.type,
+          fullname: user.fullname,
+          avatar: user.avatar,
+          email: user.email,
+          username: user.username,
+          phone: user.phone,
+          address: user.address,
+          sex: user.sex,
+        };
+    
+        if (user.type.toLowerCase() === 'organization') {
+          profile.isActiveOrganization = user.isActiveOrganization;
+          profile.imageAuthenticate=user.imageAuthenticate;
+        }
+        const isUserLoggedIn = !!userId;
+        let isFollow: boolean | undefined = undefined;
+        if (isUserLoggedIn) {
+          isFollow = await this.followRepository.isUserFollowingOrg(userId, orgId);
+          profile.isFollow = isFollow;
+        }
+        return profile;
+      } catch (error: any) {
+        console.error('Error:', error.message);
+        throw error;
+      }
+    }
+    
     
 }

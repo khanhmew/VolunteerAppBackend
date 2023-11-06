@@ -97,4 +97,8 @@ export class AuthService {
       return true;
     return false;
   }
+  async getProfile(orgId: any, userId: any){
+    const profileResult =await this.authRepository.getProfile(orgId, userId);
+    return profileResult;
+  }
 }

@@ -10,6 +10,6 @@ export interface OrgDTO {
     sex: any;
     imageAuthenticate: any;
     isActiveOrganization: boolean;
-    isFollow?: boolean;
-    follower?: number
+    isFollow: boolean;
+    follower: number
 }

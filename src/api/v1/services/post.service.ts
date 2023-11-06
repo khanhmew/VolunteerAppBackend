@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../shared/error/post.error";
 import {
   ResponseBase,
@@ -72,14 +73,17 @@ export class PostService {
   async getAllPost(page: any, limit: any, userId: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-      const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
+      const isUserLoggedIn = !!userId;
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
-        const isUserFollowingOrg = userFollowedOrgs.some((org) => org.followingId == post.ownerId);
-        const isJoin = userId === '' ? undefined : await this.activityRepository.isJoined(userId, post.activityId);
-  
-        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
-  
+        let isJoin: boolean | undefined = undefined;
+        let isUserFollowingOrg: boolean | undefined = undefined;
+        if (isUserLoggedIn) {
+          isJoin = await this.activityRepository.isJoined(userId, post.activityId);
+          const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
+          isUserFollowingOrg = userFollowedOrgs.some((org: any) => org.followingId == post.ownerId);
+        }
+        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId); 
         // Create a PostDTO without the likes and totalLikes fields
         const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
           _id: post._id,

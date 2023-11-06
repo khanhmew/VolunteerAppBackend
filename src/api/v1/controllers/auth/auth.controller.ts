@@ -66,4 +66,20 @@ export class AuthController {
         throw error;
       }
   }
+  getProfile = async(req: Request, res: Response, next: NextFunction) =>{
+    try {
+      var userIdForCheckJoin ='';
+      if(req.user){
+        userIdForCheckJoin = req.user.userId;
+      } 
+      const orgId = req.params.orgId;
+      const profileResult = await this.authServiceInstance.getProfile(orgId, userIdForCheckJoin);
+      if(!profileResult)
+        return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null)) 
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', {profileResult}));
+    }
+    catch(error: any){
+      throw error;
+    }
+}
 }
