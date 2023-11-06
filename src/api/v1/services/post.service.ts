@@ -3,6 +3,7 @@ import {
   ResponseBase,
   ResponseStatus,
 } from "../../../shared/response/response.payload";
+import { PostDTO } from "../DTO/post.dto";
 import { ActivityRepository } from "../repository/activity/activity.repository";
 import { PostRepository } from "../repository/post/post.repository";
 import { UserRepository } from "../repository/user/user.repository";
@@ -74,7 +75,10 @@ export class PostService {
   
         const isJoin = userId === '' ? undefined : await this.activityRepository.isJoined(userId, post.activityId);
   
-        return {
+        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
+  
+        // Create a PostDTO without the likes and totalLikes fields
+        const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
           _id: post._id,
           type: post.type,
           ownerId: post.ownerId,
@@ -90,7 +94,11 @@ export class PostService {
           activityId: post.activityId,
           exprirationDate: post.exprirationDate,
           isJoin,
+          numOfComment: post.numOfComment,
+          commentUrl: post.commentUrl,
+          participants: activityInformation.participants,
         };
+        return postDTO;
       }));
   
       return postsInformation;
@@ -103,13 +111,15 @@ export class PostService {
   async getAllPostByOrg(userId: any, orgId: any, page: any, limit: any) {
     try {
       const allPosts: any = await this.postRepository.getAllPostsByOrg(orgId, page, limit);
-      const isUserLoggedIn = userId !== '';
-  
-      const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
+      const isUserLoggedIn = !!userId;
+      const postsInformation: PostDTO[] = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
-        const isJoin: any = isUserLoggedIn ? await this.activityRepository.isJoined(userId, post.activityId) : undefined;
-  
-        return {
+        let isJoin: boolean | undefined = undefined;
+        if (isUserLoggedIn) {
+          isJoin = await this.activityRepository.isJoined(userId, post.activityId);
+        }
+        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
+        const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
           _id: post._id,
           type: post.type,
           ownerId: post.ownerId,
@@ -125,15 +135,23 @@ export class PostService {
           activityId: post.activityId,
           exprirationDate: post.exprirationDate,
           isJoin,
+          numOfComment: post.numOfComment,
+          commentUrl: post.commentUrl,
+          participants: activityInformation.participants,
         };
+  
+        return postDTO;
       }));
   
       return postsInformation;
     } catch (error) {
       console.log('Error when getting all posts:', error);
-      throw error;
+      throw error; 
     }
   }
+  
+  
+
   
   async getDetaiPost(_postId: any, _userId: any) {
     try {

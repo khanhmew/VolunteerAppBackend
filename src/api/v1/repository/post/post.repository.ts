@@ -6,6 +6,7 @@ import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';
 import { getTotalLikesForPost } from '../../../../redis/redisUtils';
+import { PostDTO } from '../../DTO/post.dto';
 const moment = require('moment');
 
 export class PostRepository {
@@ -139,7 +140,7 @@ export class PostRepository {
             const orgInformationPost : any= await this.userRepository.getExistOrgById(post.ownerId);
             
             if(_userId == ''){
-                const postDetail : any= {
+                const postDetail : PostDTO= {
                     _id: post._id,
                     type: post.type,
                     ownerId: post.ownerId,
@@ -147,6 +148,7 @@ export class PostRepository {
                     ownerAvatar: orgInformationPost.avatar,
                     address: orgInformationPost.address,
                     updatedAt: post.updatedAt,
+                    createdAt: post.createAt,
                     exprirationDate: post.exprirationDate,
                     scope: post.scope,
                     content: post.content,
