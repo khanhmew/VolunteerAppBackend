@@ -71,7 +71,7 @@ export class PostService {
   }
   async getAllPost(page: any, limit: any, userId: any) {
     try {
-      const allPosts: any = await this.postRepository.getAllPosts(page, limit, userId);
+      const allPosts: any = await this.postRepository.getAllPosts(page, limit);
       const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
       const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
@@ -156,7 +156,54 @@ export class PostService {
     }
   }
   
+  async getAllPostUserFollow(_page: any, _limit: any, _userId: any) {
+    try {
+      const allPosts: any = await this.postRepository.getAllPostUserFollow(_page, _limit, _userId);
+      const isUserLoggedIn = !!_userId;
+      const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(_userId);
+      const postsInformation: PostDTO[] = await Promise.all(allPosts.map(async (post: any) => {
+        const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+        const isUserFollowingOrg = userFollowedOrgs.some((org) => org.followingId == post.ownerId);
+        let isJoin: boolean | undefined = undefined;
+        if (isUserLoggedIn) {
+          isJoin = await this.activityRepository.isJoined(_userId, post.activityId);
+        }
+        else{
+          return {error: 'You must login for get'};
+        }
+        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
+        const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
+          _id: post._id,
+          type: post.type,
+          ownerId: post.ownerId,
+          ownerDisplayname: orgInformationCreatePost.fullname,
+          ownerAvatar: orgInformationCreatePost.avatar,
+          address: orgInformationCreatePost.address,
+          updatedAt: post.updatedAt,
+          createdAt: post.createdAt,
+          scope: post.scope,
+          content: post.content,
+          media: post.media,
+          participatedPeople: post.participatedPeople,
+          activityId: post.activityId,
+          exprirationDate: post.exprirationDate,
+          isJoin,
+          numOfComment: post.numOfComment,
+          commentUrl: post.commentUrl,
+          participants: activityInformation.participants,
+          totalUserJoin: activityInformation.participatedPeople.length,
+          isFollow: isUserFollowingOrg
+        };
   
+        return postDTO;
+      }));
+  
+      return {success: 'Get success', postsInformation};
+    } catch (error) {
+      return {error: error};
+      throw error;
+    }
+  }
 
   
   async getDetaiPost(_postId: any, _userId: any) {
