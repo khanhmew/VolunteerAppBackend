@@ -106,12 +106,45 @@ export class PostRepository {
 
     }
 
+    // async getAllPosts(page: any, limit: any, userId: any) {
+    //     try {
+    //         const skip = (page - 1) * limit;
+    
+    //         const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
+    
+    //         const allPosts = await Post.find()
+    //             .sort({ createdAt: -1 })
+    //             .skip(skip)
+    //             .limit(limit);
+    
+    //         const postsOfFollowedOrganizations = [];
+    //         const otherPosts : any= [];
+    
+    //         // Chia bài viết thành hai mảng riêng biệt
+    //         allPosts.forEach((post: any) => {
+    //             if (organizationsUserFollows.includes(post.ownerId.toString())) {
+    //                 postsOfFollowedOrganizations.push(post);
+    //             } else {
+    //                 otherPosts.push(post);
+    //             }
+    //         });
+    
+    //         // Thêm bài viết từ tổ chức bạn đang theo dõi vào đầu mảng tất cả bài viết
+    //         postsOfFollowedOrganizations.push(...otherPosts);
+    
+    //         return postsOfFollowedOrganizations;
+    //     } catch (error) {
+    //         console.error('Error getting all posts:', error);
+    //         throw error;
+    //     }
+    // }
+
     getAllPosts = async (page: any, limit: any) => {
         try {
             const skip = (page - 1) * limit;
 
             const posts = await Post.find()
-                .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
+                .sort({ createdAt: -1 }) 
                 .skip(skip)
                 .limit(limit);
 
@@ -121,6 +154,22 @@ export class PostRepository {
             throw error;
         }
     }
+    async getAllPostUserFollow(page: any, limit: any, userId: any) {
+        try {
+            const skip = (page - 1) * limit;
+            const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
+            const postsOfFollowedOrganizations = await Post.find({ ownerId: { $in: organizationsUserFollows } })
+                .sort({ createdAt: -1 }) 
+                .skip(skip)
+                .limit(limit);
+    
+            return postsOfFollowedOrganizations;
+        } catch (error) {
+            console.error('Error getting all posts:', error);
+            throw error;
+        }
+    }
+    
 
     async getAllPostsByOrg(orgId: any, page: any, limit: any) {
         try {

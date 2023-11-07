@@ -22,6 +22,9 @@ postRoute.get('/posts', authenticateToken,postControllerInstance.getAllPost)
 postRoute.get('/posts/:orgId',authenticateToken, postControllerInstance.getAllPostById)
 postRoute.get('/post/:postId', authenticateToken,postControllerInstance.getDetailPost)
 
+//get post that user follow
+postRoute.post('/posts/follows', authenticateToken,postControllerInstance.getAllPostUserFollow)
+
 //#region Activity
 postRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
 //#endregion
@@ -32,7 +35,6 @@ postRoute.post('/post/like', authenticateToken, postRedisControllerInstance.like
 postRoute.get('/post/likes/:postId', postRedisControllerInstance.getAllLikePost);
 postRoute.put('/post/unlike', authenticateToken,postRedisControllerInstance.unlikeAPost);
 postRoute.get('/post/like/:postId', authenticateToken,postRedisControllerInstance.checkUserLikePost);
-
 //#endregion
 
 

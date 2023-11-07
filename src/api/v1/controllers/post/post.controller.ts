@@ -90,7 +90,27 @@ export class PostController {
       return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
     }
   }
-
+  getAllPostUserFollow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;   
+      var userIdForCheckJoin ='';
+      if(req.user){
+        userIdForCheckJoin = req.user.userId;
+      } 
+      const posts: any = await this.postServiceInstance.getAllPostUserFollow(page, limit, userIdForCheckJoin);
+      if(posts.postsInformation.length < 1){
+        return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
+      }
+      if(posts.error){
+        return res.status(400).json(ResponseBase(ResponseStatus.ERROR, posts.error, null));
+      }
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));
+    } catch (error) {
+      console.error('Error getting posts:', error);
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+    }
+  }
   getAllPostById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const postId = req.params.orgId;

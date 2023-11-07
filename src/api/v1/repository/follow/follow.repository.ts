@@ -74,22 +74,37 @@ export class FollowRepository {
 
     async getOrgsFollowedByUser(userId: string) {
         try {
-          const userFollowedOrgs = await Follow.find({ followerId: userId });
-      
-          return userFollowedOrgs;
+            const userFollowedOrgs = await Follow.find({ followerId: userId });
+
+            return userFollowedOrgs;
         } catch (error) {
-          console.error('Error when getting orgs followed by user:', error);
-          throw error;
+            console.error('Error when getting orgs followed by user:', error);
+            throw error;
         }
-      }
-      
-      async isUserFollowingOrg(userId: any, orgId: any) {
+    }
+
+    async isUserFollowingOrg(userId: any, orgId: any) {
         try {
-          const existingRelationship = await Follow.findOne({ followerId: userId, followingId: orgId });
-          return !!existingRelationship;
+            const existingRelationship = await Follow.findOne({ followerId: userId, followingId: orgId });
+            return !!existingRelationship;
         } catch (error) {
-          console.error('Error checking if user is following org:', error);
-          throw error;
+            console.error('Error checking if user is following org:', error);
+            throw error;
         }
-      }
+    }
+    async getAllFollowingIds(userId: any) {
+        try {
+            // Sử dụng Mongoose để tìm tất cả các mục trong cơ sở dữ liệu với followerId là userId
+            const relationships = await Follow.find({ followerId: userId });
+
+            // Sử dụng phương thức map để trích xuất tất cả các followingId vào một mảng
+            const followingIds = relationships.map((relationship) => relationship.followingId.toString());
+
+            return followingIds;
+        } catch (error) {
+            console.error('Error getting followingIds:', error);
+            throw error;
+        }
+    }
+
 }
