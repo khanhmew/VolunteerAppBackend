@@ -120,7 +120,6 @@ export class AuthRepository {
         if (!user) {
           throw new AccountNotFoundError('Profile not found');
         }
-    
         const profile: any = {
           _id: user._id,
           type: user.type,
@@ -136,6 +135,8 @@ export class AuthRepository {
         if (user.type.toLowerCase() === 'organization') {
           profile.isActiveOrganization = user.isActiveOrganization;
           profile.imageAuthenticate=user.imageAuthenticate;
+          const followers = await this.followRepository.countFollowersOfOrg(user._id);
+          profile.followers=followers;
         }
         const isUserLoggedIn = !!userId;
         let isFollow: boolean | undefined = undefined;
