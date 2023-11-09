@@ -113,7 +113,7 @@ export class UserRepository {
                     changes, // Dữ liệu cần cập nhật
                     { new: true } // Tùy chọn để trả về người dùng đã cập nhật
                 );
-                const userResultForUpdate = {
+                const userResultForUpdate : any= {
                     _id: updatedUser?.id,
                     type: updatedUser?.type,
                     fullname: updatedUser?.fullname,
@@ -121,8 +121,13 @@ export class UserRepository {
                     phone: updatedUser?.phone,
                     avatar: updatedUser?.avatar,
                     email: updatedUser?.email,
-                    address: updatedUser?.address
+                    address: updatedUser?.address,
+                    
                 };
+                if(updatedUser?.type.toLowerCase() == 'organization')
+                {
+                    userResultForUpdate.isActive= updatedUser?.isActiveOrganization;
+                }
                 return { userResultForUpdate };
             } catch (error) {
                 console.error('Error updating user:', error);
