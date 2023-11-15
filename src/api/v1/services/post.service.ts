@@ -48,7 +48,8 @@ export class PostService {
         commentUrl: postSave.commentUrl,
         participatedPeople: [],
         participants: activityInformation.participants,
-        isExprired: activityInformation?.isExprired
+        isExprired: activityInformation?.isExprired,
+        dateActivity: activityInformation.dateActivity
       }
       if (postSave) {
         return postInformation;

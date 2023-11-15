@@ -81,7 +81,8 @@ export class PostRepository {
                         postId: postSave,
                         address: orgInformationCreatePost.address,
                         participatedPeople: [],
-                        exprirationDate: expirationDate
+                        exprirationDate: expirationDate,
+                        dateActivity: _post.dateActivity
                     })
 
                     //_post.participants: là body nhận vào -> lưu vào bảng activites
@@ -216,7 +217,8 @@ export class PostRepository {
                     likes: [],
                     totalLikes: 0,
                     totalUserJoin: activityResult.numOfPeopleParticipated,
-                    isExprired: activityResult?.isExprired
+                    isExprired: activityResult?.isExprired,
+                    dateActivity: activityResult.dateActivity
                 };
 
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
@@ -250,7 +252,8 @@ export class PostRepository {
                     isJoin: isJoin,
                     isFollowing: isFollowing,
                     totalUserJoin: activityResult.numOfPeopleParticipated,
-                    isExprired: activityResult?.isExprired
+                    isExprired: activityResult?.isExprired,
+                    dateActivity: activityResult.dateActivity
                 };
 
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes

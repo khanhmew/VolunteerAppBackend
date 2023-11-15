@@ -13,7 +13,8 @@ export class ActivityRepository {
       address: _post.address,
       isExprired: false,
       exprirationDate: _post.exprirationDate,
-      numOfPeopleParticipated: 0
+      numOfPeopleParticipated: 0,
+      dateActivity: _post.dateActivity
     })
     await activitySave.save();
     return activitySave;

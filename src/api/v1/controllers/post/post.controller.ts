@@ -26,7 +26,8 @@ export class PostController {
         exprirationDate: req.body.exprirationDate,
         scope: req.body.scope,
         content: req.body.content,
-        participants: req.body.participants
+        participants: req.body.participants,
+        dateActivity: req.body.dateActivity
       }
       const uploadedImages = req.files; // Mảng các tệp đã tải lên
       if (uploadedImages && uploadedImages.length > 0) {

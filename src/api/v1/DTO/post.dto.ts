@@ -20,5 +20,6 @@ export interface PostDTO {
     totalLikes?: number;
     isJoin?: boolean;
     isFollow?: boolean;
-    isExprired: boolean
+    isExprired: boolean;
+    dateActivity?: Date
 }
