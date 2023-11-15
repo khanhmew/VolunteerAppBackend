@@ -215,7 +215,7 @@ export class PostRepository {
                     participants: activityResult.participants,
                     likes: [],
                     totalLikes: 0,
-                    totalUserJoin: activityResult.participatedPeople.length,
+                    totalUserJoin: activityResult.numOfPeopleParticipated,
                     isExprired: activityResult?.isExprired
                 };
 
@@ -249,7 +249,7 @@ export class PostRepository {
                     totalLikes: 0,
                     isJoin: isJoin,
                     isFollowing: isFollowing,
-                    totalUserJoin: activityResult.participatedPeople.length,
+                    totalUserJoin: activityResult.numOfPeopleParticipated,
                     isExprired: activityResult?.isExprired
                 };
 

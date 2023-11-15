@@ -99,7 +99,6 @@ export class PostService {
           scope: post.scope,
           content: post.content,
           media: post.media,
-          participatedPeople: post.participatedPeople,
           activityId: post.activityId,
           exprirationDate: activityInformation?.exprirationDate,
           isJoin,
@@ -107,7 +106,7 @@ export class PostService {
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
           isFollow: isUserFollowingOrg,
-          totalUserJoin: activityInformation.participatedPeople.length,
+          totalUserJoin: activityInformation.numOfPeopleParticipated,
           isExprired: activityInformation?.isExprired
         };
         return postDTO;
@@ -143,14 +142,13 @@ export class PostService {
           scope: post.scope,
           content: post.content,
           media: post.media,
-          participatedPeople: post.participatedPeople,
           activityId: post.activityId,
           exprirationDate: activityInformation.exprirationDate,
           isJoin,
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
-          totalUserJoin: activityInformation.participatedPeople.length,
+          totalUserJoin: activityInformation.numOfPeopleParticipated,
           isExprired: activityInformation?.isExprired
         };
   
@@ -192,14 +190,13 @@ export class PostService {
           scope: post.scope,
           content: post.content,
           media: post.media,
-          participatedPeople: post.participatedPeople,
           activityId: post.activityId,
           exprirationDate: activityInformation.exprirationDate,
           isJoin,
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
-          totalUserJoin: activityInformation.participatedPeople.length,
+          totalUserJoin: activityInformation.numOfPeopleParticipated,
           isFollow: isUserFollowingOrg,
           isExprired: activityInformation?.isExprired
         };

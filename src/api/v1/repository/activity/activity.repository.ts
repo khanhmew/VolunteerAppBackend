@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
+import Join from '../activity/join.entity';
 import { UserJoinedBefore } from '../../../../shared/error/activity.error';
 
 export class ActivityRepository {
@@ -30,6 +31,16 @@ export class ActivityRepository {
     }
   }
 
+  hasExistJoin = async(_userId: any, _activityId: any) => {
+    const joinExist = await Join.findOne({
+      userId: _userId,
+      activityId:  _activityId
+    });
+    if(joinExist)
+      return true;
+    return false;
+  }
+
   //check user attend before
   hasUserJoinedActivity = async (_userId: any, _activityId: any) => {
     try {
@@ -37,7 +48,7 @@ export class ActivityRepository {
       if (!activity) {
         return false;
       }
-      const hasJoined = activity.participatedPeople.includes(_userId);
+      const hasJoined = await this.hasExistJoin(_userId, _activityId);
       return hasJoined;
     } catch (error) {
       console.error('Error:', error);
@@ -54,9 +65,9 @@ export class ActivityRepository {
       }
   
       const maxParticipants = activity.participants;
-      const currentParticipants = activity.participatedPeople.length;
+      const currentParticipants = activity.numOfPeopleParticipated;
   
-      if (currentParticipants >= maxParticipants.valueOf()) {
+      if (currentParticipants as number >= maxParticipants.valueOf()) {
         return {error: 'This activity has reached its maximum participants limit'};
       }
       return { success: 'That activity can join now' };
@@ -77,13 +88,24 @@ export class ActivityRepository {
         if (!user || !activity) {
           return {error: 'User or Activity not found'};
         }
-    
-        if (activity.participatedPeople.includes(userId)) {
+        const checkUserJoined = await this.hasExistJoin(userId, activityId);
+        if (checkUserJoined) {
           return {error: 'User is already participating in this activity'};
         }
-        if(activity.participants )
-        activity.participatedPeople.push(user._id);
-        activity.numOfPeopleParticipated = activity.participatedPeople.length;
+        if(activity.isExprired){
+          return {error: 'This activity is expried'};
+        }
+        if(activity.participants)
+        var joinNew: any = new Join({
+          activityId: activity._id,
+          userId: userId,
+          isAttended: false,
+          timeAttended: new Date()
+        });
+        joinNew.save();
+        if(joinNew){
+          activity.numOfPeopleParticipated = activity.numOfPeopleParticipated as number + 1;
+        }
         await activity.save();
         return {success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated};
       } 
@@ -99,7 +121,7 @@ export class ActivityRepository {
       if (!activity) {
         throw new Error('Activity not found');
       }
-      const isUserJoined = activity.participatedPeople.includes(userId);
+      const isUserJoined = await this.hasExistJoin(userId, activityId);
       return isUserJoined;
     } catch (error) {
       throw error;
