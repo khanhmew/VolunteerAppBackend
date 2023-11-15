@@ -8,7 +8,10 @@ import { ActivityRepository } from '../activity/activity.repository';
 import { getTotalLikesForPost } from '../../../../redis/redisUtils';
 import { PostDTO } from '../../DTO/post.dto';
 import { FollowRepository } from '../follow/follow.repository';
+import { getLocationFromAddress } from '../../services/location.service';
 const moment = require('moment');
+const { point, distance } = require('@turf/turf');
+
 
 export class PostRepository {
     private readonly userRepository!: UserRepository;
@@ -50,6 +53,7 @@ export class PostRepository {
                     numOfComment: 0,
                     commentUrl: '',
                 })
+                var expirationDate = new Date;
                 if (dateRegex.test(_post.exprirationDate.toString()) && moment(_post.exprirationDate, 'DD-MM-YYYY', true).isValid()) {
                     const currentDate = new Date(); // Lấy thời gian hiện tại
                     const day = currentDate.getDate(); // Lấy ngày
@@ -58,10 +62,9 @@ export class PostRepository {
                     const formattedDate = `${day}-${month}-${year}`;
 
                     // console.log("Ngày/tháng/năm hiện tại:", formattedDate);
-                    const expirationDate = moment(_post.exprirationDate, 'DD-MM-YYYY').toDate(); // Chuyển đổi ngày hết hạn sang đối tượng Date
+                    expirationDate = moment(_post.exprirationDate, 'DD-MM-YYYY').toDate(); // Chuyển đổi ngày hết hạn sang đối tượng Date
 
                     if (currentDate < expirationDate) {
-                        postSave.exprirationDate = expirationDate;
                         postSave.createdAt = currentDate;
                     }
                     else {
@@ -77,7 +80,8 @@ export class PostRepository {
                     const activityCreate = new Activity({
                         postId: postSave,
                         address: orgInformationCreatePost.address,
-                        participatedPeople: []
+                        participatedPeople: [],
+                        exprirationDate: expirationDate
                     })
 
                     //_post.participants: là body nhận vào -> lưu vào bảng activites
@@ -109,17 +113,17 @@ export class PostRepository {
     // async getAllPosts(page: any, limit: any, userId: any) {
     //     try {
     //         const skip = (page - 1) * limit;
-    
+
     //         const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
-    
+
     //         const allPosts = await Post.find()
     //             .sort({ createdAt: -1 })
     //             .skip(skip)
     //             .limit(limit);
-    
+
     //         const postsOfFollowedOrganizations = [];
     //         const otherPosts : any= [];
-    
+
     //         // Chia bài viết thành hai mảng riêng biệt
     //         allPosts.forEach((post: any) => {
     //             if (organizationsUserFollows.includes(post.ownerId.toString())) {
@@ -128,10 +132,10 @@ export class PostRepository {
     //                 otherPosts.push(post);
     //             }
     //         });
-    
+
     //         // Thêm bài viết từ tổ chức bạn đang theo dõi vào đầu mảng tất cả bài viết
     //         postsOfFollowedOrganizations.push(...otherPosts);
-    
+
     //         return postsOfFollowedOrganizations;
     //     } catch (error) {
     //         console.error('Error getting all posts:', error);
@@ -144,7 +148,7 @@ export class PostRepository {
             const skip = (page - 1) * limit;
 
             const posts = await Post.find()
-                .sort({ createdAt: -1 }) 
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
 
@@ -159,17 +163,17 @@ export class PostRepository {
             const skip = (page - 1) * limit;
             const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
             const postsOfFollowedOrganizations = await Post.find({ ownerId: { $in: organizationsUserFollows } })
-                .sort({ createdAt: -1 }) 
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-    
+
             return postsOfFollowedOrganizations;
         } catch (error) {
             console.error('Error getting all posts:', error);
             throw error;
         }
     }
-    
+
 
     async getAllPostsByOrg(orgId: any, page: any, limit: any) {
         try {
@@ -185,14 +189,14 @@ export class PostRepository {
         }
     }
 
-    getDetailPost= async(_postId: any, _userId: any) =>  {
+    getDetailPost = async (_postId: any, _userId: any) => {
         try {
-            const post : any = await Post.findOne({ _id: _postId });
-            const activityResult : any= await this.activityRepository.getActivityById(post.activityId);
-            const orgInformationPost : any= await this.userRepository.getExistOrgById(post.ownerId);
-            
-            if(_userId == ''){
-                const postDetail : PostDTO= {
+            const post: any = await Post.findOne({ _id: _postId });
+            const activityResult: any = await this.activityRepository.getActivityById(post.activityId);
+            const orgInformationPost: any = await this.userRepository.getExistOrgById(post.ownerId);
+
+            if (_userId == '') {
+                const postDetail: PostDTO = {
                     _id: post._id,
                     type: post.type,
                     ownerId: post.ownerId,
@@ -201,7 +205,7 @@ export class PostRepository {
                     address: orgInformationPost.address,
                     updatedAt: post.updatedAt,
                     createdAt: post.createAt,
-                    exprirationDate: post.exprirationDate,
+                    exprirationDate: activityResult.exprirationDate,
                     scope: post.scope,
                     content: post.content,
                     media: post.media,
@@ -212,19 +216,20 @@ export class PostRepository {
                     likes: [],
                     totalLikes: 0,
                     totalUserJoin: activityResult.participatedPeople.length,
+                    isExprired: activityResult?.isExprired
                 };
-        
+
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
-        
+
                 postDetail.likes = likes;
                 postDetail.totalLikes = likes.length;
-        
+
                 return postDetail;
             }
-            else{
+            else {
                 const isJoin: any = await this.activityRepository.isJoined(_userId, post.activityId);
                 const isFollowing = await this.followRepository.isUserFollowingOrg(_userId, post.ownerId);
-                const postDetail : any= {
+                const postDetail: any = {
                     _id: post._id,
                     type: post.type,
                     ownerId: post.ownerId,
@@ -232,7 +237,7 @@ export class PostRepository {
                     ownerAvatar: orgInformationPost.avatar,
                     address: orgInformationPost.address,
                     updatedAt: post.updatedAt,
-                    exprirationDate: post.exprirationDate,
+                    exprirationDate: activityResult.exprirationDate,
                     scope: post.scope,
                     content: post.content,
                     media: post.media,
@@ -245,20 +250,66 @@ export class PostRepository {
                     isJoin: isJoin,
                     isFollowing: isFollowing,
                     totalUserJoin: activityResult.participatedPeople.length,
+                    isExprired: activityResult?.isExprired
                 };
-        
+
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
-        
+
                 postDetail.likes = likes;
                 postDetail.totalLikes = likes.length;
-        
+
                 return postDetail;
             }
-            
+
         } catch (error) {
             console.error('Error:', error);
             throw error; // You should handle or propagate the error as needed
         }
     }
-    
+
+    async getNearbyPosts(userAddress: any, page: any, limit: any) {
+        try {
+            // Lấy vị trí từ địa chỉ người dùng
+            const userLocation = await getLocationFromAddress(userAddress);
+
+            // Kiểm tra nếu userLocation không tồn tại hoặc không có thuộc tính coordinates
+            if (!userLocation?.coordinates) {
+                throw new Error('Invalid user location');
+            }
+
+            // Tính toán bounding box để giới hạn kết quả
+            const bbox = distance(
+                point(userLocation?.coordinates),
+                point([userLocation?.coordinates[0], userLocation.coordinates[1] + 1]),
+                { units: 'kilometers' }
+            );
+
+            // Kiểm tra nếu bbox không tồn tại, sử dụng bounding box mặc định
+            const boundingBox = Array.isArray(bbox)
+                ? bbox
+                : [[-180, -90], [180, 90]];
+
+            // Truy vấn MongoDB sử dụng 2dsphere index và bounding box
+            const nearbyPosts = await Post.find({
+                location: {
+                    $geoWithin: {
+                        $geometry: {
+                            type: 'Polygon',
+                            coordinates: [boundingBox]
+                        }
+                    }
+                }
+            })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .exec();
+
+            return nearbyPosts;
+        } catch (error) {
+            console.error('Error getting nearby posts:', error);
+            throw error;
+        }
+    }
+
+
 }

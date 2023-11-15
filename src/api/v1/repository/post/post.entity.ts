@@ -5,14 +5,13 @@ export interface IPost {
     ownerId: String,
     createdAt: Date,
     updatedAt: Date,
-    exprirationDate: Date,
     scope: String,
     content: String,
     media: Array<String>,
     numOfComment: Number,
     commentUrl: String,
     activityId: String,
-    fundId: String
+    fundId: String,
 }
 
 export interface IPostModel extends IPost, Document { }
@@ -23,14 +22,14 @@ const IPostSchema: Schema = new Schema(
         ownerId: {type: String, required: true},
         createdAt: {type: Date, required: false},
         updatedAt: {type: Date, require: false},
-        exprirationDate: {type: Date, require: true},
         scope: {type: String, require: true},
         content: {type: String, require: true},
         media: {type: Array<String>, require: false},
         numOfComment: {type: Number, require: false},
         commentUrl: {type: String, require: false},
         activityId: {type: String, require: false},
-        fundId: {type: String, require: false}
+        fundId: {type: String, require: false},
+        
     },
     {
         versionKey: false
@@ -45,7 +44,6 @@ export const DefaultPostData = (type: String,ownerId: String, exprirationDate: D
         ownerId: ownerId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        exprirationDate: exprirationDate,
         scope: scope,
         content: content,
         media: media,
@@ -53,6 +51,7 @@ export const DefaultPostData = (type: String,ownerId: String, exprirationDate: D
         commentUrl: '',
         activityId: activityId,
         fundId: fundId,
+       
     }
     return iPost;
 }

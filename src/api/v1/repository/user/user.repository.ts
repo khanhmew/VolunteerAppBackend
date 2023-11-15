@@ -37,7 +37,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username']);
+            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username','address']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);

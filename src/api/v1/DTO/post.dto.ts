@@ -7,7 +7,7 @@ export interface PostDTO {
     address: string;
     updatedAt: Date;
     createdAt: Date;
-    exprirationDate: Date;
+    exprirationDate?: Date;
     scope: string;
     content: string;
     media: string[];
@@ -20,5 +20,6 @@ export interface PostDTO {
     likes?: string[];
     totalLikes?: number;
     isJoin?: boolean;
-    isFollow?: boolean
+    isFollow?: boolean;
+    isExprired: boolean
 }

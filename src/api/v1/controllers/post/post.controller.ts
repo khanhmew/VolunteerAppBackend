@@ -142,4 +142,21 @@ export class PostController {
       return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
     }
   }
+  getPostsNearest = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if(!req.user){
+        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'User must login', null));
+      }
+      const userForGetId = req.user.userId;
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;   
+      const postsGet: any = await this.postServiceInstance.getNearbyPosts(userForGetId,page, limit );
+      if(postsGet.length < 1){
+        return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
+      }
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', postsGet));
+    } catch (error: any) {
+        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+    }
+  }
 }

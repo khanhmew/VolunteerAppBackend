@@ -19,6 +19,7 @@ const upload = multer({
 
 postRoute.post('/post', authenticateToken, upload.array('images', 5), postControllerInstance.createPost);
 postRoute.get('/posts', authenticateToken,postControllerInstance.getAllPost)
+postRoute.get('/posts/address', authenticateToken,postControllerInstance.getPostsNearest)
 postRoute.get('/posts/:orgId',authenticateToken, postControllerInstance.getAllPostById)
 postRoute.get('/post/:postId', authenticateToken,postControllerInstance.getDetailPost)
 

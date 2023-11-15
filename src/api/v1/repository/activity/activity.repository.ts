@@ -10,6 +10,8 @@ export class ActivityRepository {
       participatedPeople: [],
       postId: _post._id,
       address: _post.address,
+      isExprired: false,
+      exprirationDate: _post.exprirationDate,
       numOfPeopleParticipated: 0
     })
     await activitySave.save();

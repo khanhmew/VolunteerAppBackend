@@ -9,6 +9,7 @@ import { ActivityRepository } from "../repository/activity/activity.repository";
 import { FollowRepository } from "../repository/follow/follow.repository";
 import { PostRepository } from "../repository/post/post.repository";
 import { UserRepository } from "../repository/user/user.repository";
+import { getLocationFromAddress } from "./location.service";
 
 
 
@@ -38,7 +39,7 @@ export class PostService {
         ownerAvatar: orgInformationCreatePost.avatar,
         address: orgInformationCreatePost.address,
         updatedAt: postSave.updatedAt,
-        exprirationDate: postSave.exprirationDate,
+        exprirationDate: activityInformation.exprirationDate,
         scope: postSave.scope,
         content: postSave.content,
         media: postSave.media,
@@ -46,7 +47,8 @@ export class PostService {
         numOfComment: postSave.numOfComment,
         commentUrl: postSave.commentUrl,
         participatedPeople: [],
-        participants: activityInformation.participants
+        participants: activityInformation.participants,
+        isExprired: activityInformation?.isExprired
       }
       if (postSave) {
         return postInformation;
@@ -99,13 +101,14 @@ export class PostService {
           media: post.media,
           participatedPeople: post.participatedPeople,
           activityId: post.activityId,
-          exprirationDate: post.exprirationDate,
+          exprirationDate: activityInformation?.exprirationDate,
           isJoin,
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
           isFollow: isUserFollowingOrg,
           totalUserJoin: activityInformation.participatedPeople.length,
+          isExprired: activityInformation?.isExprired
         };
         return postDTO;
       }));
@@ -142,12 +145,13 @@ export class PostService {
           media: post.media,
           participatedPeople: post.participatedPeople,
           activityId: post.activityId,
-          exprirationDate: post.exprirationDate,
+          exprirationDate: activityInformation.exprirationDate,
           isJoin,
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
           totalUserJoin: activityInformation.participatedPeople.length,
+          isExprired: activityInformation?.isExprired
         };
   
         return postDTO;
@@ -190,13 +194,14 @@ export class PostService {
           media: post.media,
           participatedPeople: post.participatedPeople,
           activityId: post.activityId,
-          exprirationDate: post.exprirationDate,
+          exprirationDate: activityInformation.exprirationDate,
           isJoin,
           numOfComment: post.numOfComment,
           commentUrl: post.commentUrl,
           participants: activityInformation.participants,
           totalUserJoin: activityInformation.participatedPeople.length,
-          isFollow: isUserFollowingOrg
+          isFollow: isUserFollowingOrg,
+          isExprired: activityInformation?.isExprired
         };
   
         return postDTO;
@@ -218,5 +223,12 @@ export class PostService {
       console.log('Error when getting detail post:', error);
       throw error;
     }
+  }
+
+  async getNearbyPosts(_userId: any, _page:any, _limit: any) {
+    const userInfo: any =await this.userRepository.getExistUserById(_userId);
+    this.postRepository.getNearbyPosts(userInfo.address, _page, _limit)
+    .then((nearbyPosts) => {return nearbyPosts})
+    .catch((error) => console.error(error));
   }
 }
