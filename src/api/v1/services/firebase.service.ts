@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import { Readable } from 'stream';
 import sharp from 'sharp';
+import nodemailer from 'nodemailer';
 
 const admin = require('firebase-admin');
 const serviceAccount = require('../../../config/firebase/serviceAccountKey.json');
@@ -107,3 +108,36 @@ export const getImageSize = async (imageUrl: any) => {
 };
 
 
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: 'tochucthiennguyen.lienhe@gmail.com', // replace with your Gmail email address
+    pass: 'yrugjalwndpxueak', // replace with your Gmail app password or account password
+  },
+});
+export const sendVerificationEmail = async (userEmail: string, datailPost: any) => {
+  try {
+    const mailOptions = {
+      from: 'tochucthiennguyen.lienhe', 
+      to: userEmail,
+      subject: 'Verify Your Email',
+      html: `<h1>Thông báo Đăng ký Tham gia Hoạt động</h1>
+            <p>Bạn đã đăng ký tham gia hoạt động thành công</p>
+        
+            <div style="background-color: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-top: 20px;">
+              <h2>${datailPost.title}</h2>
+              <p><strong>Ngày tổ chức:</strong> ${datailPost.dateActivity}</p>
+              <p><strong>Địa điểm:</strong> ${datailPost.address}</p>
+              <p><strong>Mô tả:</strong> ${datailPost.content}</p>
+            </div>`,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    throw error;
+  }
+};

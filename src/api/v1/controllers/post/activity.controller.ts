@@ -36,6 +36,5 @@ export class ActivityController {
         catch (error: any) {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
-
     }
 }

@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
 import Join from '../activity/join.entity';
+import Post from '../post/post.entity';
 import { UserJoinedBefore } from '../../../../shared/error/activity.error';
+import { sendVerificationEmail } from "../../services/firebase.service";
 
 export class ActivityRepository {
   createNewActivity = async (_post: any) => {
@@ -42,6 +44,15 @@ export class ActivityRepository {
     return false;
   }
 
+  hasEmailJoinSend = async(_userId: any, _activityId: any) => {
+    const joinExist = await Join.findOne({
+      userId: _userId,
+      activityId:  _activityId
+    });
+    if(joinExist?.isEmailsend)
+      return true;
+    return false;
+  }
   //check user attend before
   hasUserJoinedActivity = async (_userId: any, _activityId: any) => {
     try {
@@ -54,6 +65,18 @@ export class ActivityRepository {
     } catch (error) {
       console.error('Error:', error);
       return false;
+    }
+  };
+
+  findPostBaseActId= async (_activityId: any) => {
+    try {
+      const post = await Post.findOne({ activityId: _activityId });
+      if (!post) {
+        return ({error: 'Activity not found'})
+      }
+      return post;
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -101,13 +124,21 @@ export class ActivityRepository {
           activityId: activity._id,
           userId: userId,
           isAttended: false,
-          timeAttended: new Date()
+          timeAttended: new Date(),
         });
         joinNew.save();
         if(joinNew){
           activity.numOfPeopleParticipated = activity.numOfPeopleParticipated as number + 1;
         }
         await activity.save();
+        const PostInfor: any =  await this.findPostBaseActId(activityId);
+        const postSendMail: any = ({
+          dateActivity: activity.dateActivity,
+          content: PostInfor.content,
+          address: activity.address,
+          title: 'Nội dung chi tiết như sau:'
+        })
+        await sendVerificationEmail(user.email, postSendMail);
         return {success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated};
       } 
   }
@@ -129,4 +160,18 @@ export class ActivityRepository {
     }
   }
   
+  checkAndSendMailForUser =  async (userId: any, activityId: any, detailPost: any) => {
+    try {
+      const isSend = await this.hasEmailJoinSend(userId, activityId)
+      if(!isSend){
+        const user = await User.findById(userId); 
+        if (!user) {
+          throw new Error('User not found');
+        }
+        await sendVerificationEmail(user.email, detailPost);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 }
