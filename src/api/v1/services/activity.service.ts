@@ -31,4 +31,14 @@ export class ActivityService {
     }
   }
 
+  getDetailsOfJoinedActivities = async (_userId: any) => {
+    try {
+      const detailedActivities = await this.activityRepository.getDetailsOfJoinedActivities(_userId);
+      return detailedActivities;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error; // Nếu bạn muốn ném lỗi để nó được xử lý ở nơi gọi hàm
+    }
+  }
+  
 }

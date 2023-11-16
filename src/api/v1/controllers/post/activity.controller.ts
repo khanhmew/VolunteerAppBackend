@@ -37,4 +37,17 @@ export class ActivityController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+    getDetailsOfJoinedActivities = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userForGetAct = req.user.userId;
+            const joinResult: any=await this.activityServiceInstance.getDetailsOfJoinedActivities(userForGetAct);
+            if (joinResult) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Join success', joinResult));
+            }
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }

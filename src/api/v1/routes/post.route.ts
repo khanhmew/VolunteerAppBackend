@@ -27,7 +27,7 @@ postRoute.get('/post/:postId', authenticateToken,postControllerInstance.getDetai
 postRoute.post('/posts/follows', authenticateToken,postControllerInstance.getAllPostUserFollow)
 
 //#region Activity
-postRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
+// postRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
 //#endregion
 
 

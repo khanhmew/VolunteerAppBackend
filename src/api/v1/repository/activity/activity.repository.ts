@@ -5,6 +5,7 @@ import Join from '../activity/join.entity';
 import Post from '../post/post.entity';
 import { UserJoinedBefore } from '../../../../shared/error/activity.error';
 import { sendVerificationEmail } from "../../services/firebase.service";
+import { ActDTO } from '../../DTO/activity.dto';
 
 export class ActivityRepository {
   createNewActivity = async (_post: any) => {
@@ -172,6 +173,34 @@ export class ActivityRepository {
       }
     } catch (error) {
       throw error;
+    }
+  }
+  
+
+  async getDetailsOfJoinedActivities(userId: any) {
+    try {
+      const joinedActivities = await Join.find({ userId: userId });
+  
+      const detailedActivities = await Promise.all(
+        joinedActivities.map(async (joinedActivity) => {
+          const activityId = joinedActivity.activityId;
+          const activityDetails = await Activity.findById(activityId);
+          const postForGet = await Post.findOne({activityId: activityId});
+          const owner = await User.findOne({_id: postForGet?.ownerId});
+          const actDetails: ActDTO = ({
+              _id: activityId,
+              _postId: postForGet?._id,
+              dateActivity: activityDetails?.dateActivity,
+              media: postForGet?.media[0],
+              ownerDisplayname: owner?.fullname
+          })
+          return actDetails;
+        })
+      );
+  
+      return detailedActivities;
+    } catch (error) {
+      console.error('Error getting details of joined activities:', error);
     }
   }
 }
