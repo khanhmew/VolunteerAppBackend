@@ -122,7 +122,7 @@ export const sendVerificationEmail = async (userEmail: string, datailPost: any) 
     const mailOptions = {
       from: 'tochucthiennguyen.lienhe', 
       to: userEmail,
-      subject: 'Verify Your Email',
+      subject: 'Đăng ký tình nguyện',
       html: `<h1>Thông báo Đăng ký Tham gia Hoạt động</h1>
             <p>Bạn đã đăng ký tham gia hoạt động thành công</p>
         
