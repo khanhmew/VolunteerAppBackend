@@ -7,6 +7,7 @@ const activityControllerInstance = new ActivityController();
 //#region Activity
 activityRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
 activityRoute.get('/activity/join', authenticateToken,activityControllerInstance.getDetailsOfJoinedActivities)
+activityRoute.get('/activity/create', authenticateToken,activityControllerInstance.getDetailsOfCreatedActivities)
 //#endregion
 
 

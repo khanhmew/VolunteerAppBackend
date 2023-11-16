@@ -7,7 +7,8 @@ export interface IActivity {
     numOfPeopleParticipated: Number,
     isExprired: Boolean,
     exprirationDate: Date,
-    dateActivity: Date
+    dateActivity: Date,
+    ownerId: String,
 }
 
 export interface IActivityModel extends IActivity, Document { }
@@ -21,6 +22,7 @@ const IActivitySchema: Schema = new Schema(
         exprirationDate: {type: Date, require: true},
         isExprired: {type: Boolean, require: true},
         dateActivity: {type: Date, require: true},
+        ownerId: {type: String, required: true},
     },
     {
         versionKey: false
@@ -29,7 +31,7 @@ const IActivitySchema: Schema = new Schema(
 
 export default mongoose.model<IActivityModel>('Activity', IActivitySchema);
 
-export const DefaultUserData = (postId: String, address: String, exprirationDate: Date, dateActivity: Date) => {
+export const DefaultUserData = (postId: String, address: String, exprirationDate: Date, dateActivity: Date, ownerId: String) => {
     const iActivity: IActivity = {
         address: address,
         postId: postId,
@@ -37,7 +39,8 @@ export const DefaultUserData = (postId: String, address: String, exprirationDate
         numOfPeopleParticipated: 0,
         exprirationDate: exprirationDate,
         isExprired: false,
-        dateActivity: dateActivity
+        dateActivity: dateActivity,
+        ownerId: ownerId
     }
     return iActivity;
 }

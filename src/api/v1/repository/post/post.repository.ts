@@ -82,7 +82,8 @@ export class PostRepository {
                         address: orgInformationCreatePost.address,
                         participatedPeople: [],
                         exprirationDate: expirationDate,
-                        dateActivity: _post.dateActivity
+                        dateActivity: _post.dateActivity,
+                        ownerId: _post.ownerId
                     })
 
                     //_post.participants: là body nhận vào -> lưu vào bảng activites

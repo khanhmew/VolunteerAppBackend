@@ -17,7 +17,8 @@ export class ActivityRepository {
       isExprired: false,
       exprirationDate: _post.exprirationDate,
       numOfPeopleParticipated: 0,
-      dateActivity: _post.dateActivity
+      dateActivity: _post.dateActivity,
+      ownerId: _post.ownerId
     })
     await activitySave.save();
     return activitySave;
@@ -203,4 +204,33 @@ export class ActivityRepository {
       console.error('Error getting details of joined activities:', error);
     }
   }
+
+  async getDetailsOfActivitiesCreated(_orgId: any) {
+    try {
+      const createdActivities = await Activity.find({ ownerId: _orgId });
+  
+      const detailedActivities = await Promise.all(
+        createdActivities.map(async (createdActivity) => {
+          const activityId = createdActivity.id;
+          const activityDetails = await Activity.findById(activityId);
+          const postForGet = await Post.findOne({activityId: activityId});
+          const owner = await User.findOne({_id: _orgId});
+          const actDetails: ActDTO = ({
+              _id: activityId,
+              _postId: postForGet?._id,
+              dateActivity: activityDetails?.dateActivity,
+              media: postForGet?.media[0],
+              ownerDisplayname: owner?.fullname
+          })
+          return actDetails;
+        })
+      );
+  
+      return detailedActivities;
+    } catch (error) {
+      console.error('Error getting details of joined activities:', error);
+    }
+  }
+
+  
 }

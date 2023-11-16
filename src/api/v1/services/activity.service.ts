@@ -40,5 +40,13 @@ export class ActivityService {
       throw error; // Nếu bạn muốn ném lỗi để nó được xử lý ở nơi gọi hàm
     }
   }
-  
+  getDetailsOfCreatedActivities = async (_orgId: any) => {
+    try {
+      const detailedActivities = await this.activityRepository.getDetailsOfActivitiesCreated(_orgId);
+      return detailedActivities;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error; // Nếu bạn muốn ném lỗi để nó được xử lý ở nơi gọi hàm
+    }
+  }
 }
