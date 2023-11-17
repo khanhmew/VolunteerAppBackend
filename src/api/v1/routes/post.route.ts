@@ -39,4 +39,9 @@ postRoute.get('/post/like/:postId', authenticateToken,postRedisControllerInstanc
 //#endregion
 
 
+
+//#region COMMENT
+postRoute.post('/post/comment', authenticateToken, postControllerInstance.commentAPost);
+postRoute.get('/post/:postId/comments', postControllerInstance.getAllComment);
+//#endregion
 export default postRoute;

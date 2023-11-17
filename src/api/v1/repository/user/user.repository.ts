@@ -20,6 +20,12 @@ export class UserRepository {
         // });
         // return userToStore.save();
     }
+    checkUserExist = async(_userId: any) => {
+        const result = await User.exists({_id: _userId});
+        if(result)
+            return true;
+        return false;
+    }
 
     getUserByUsername = (_username: string) => {
         return User.findOne({

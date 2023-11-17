@@ -10,6 +10,7 @@ import { FollowRepository } from "../repository/follow/follow.repository";
 import { PostRepository } from "../repository/post/post.repository";
 import { UserRepository } from "../repository/user/user.repository";
 import { getLocationFromAddress } from "./location.service";
+import { commentDTO } from "../DTO/comment.dto";
 
 
 
@@ -228,5 +229,38 @@ export class PostService {
     this.postRepository.getNearbyPosts(userInfo.address, _page, _limit)
     .then((nearbyPosts) => {return nearbyPosts})
     .catch((error) => console.error(error));
+  }
+
+  async commentAPost(_ownerId: any, _postId: any, _content: any){ 
+      const commentResult = await this.postRepository.commentAPost(_ownerId, _postId,_content);
+      return commentResult;
+  }
+  async replyAComment(_ownerId: any, _postId: any, _content: any, _parentCommentId: any){ 
+    const commentResult = await this.postRepository.replyAComment(_ownerId, _postId,_content, _parentCommentId);
+    return commentResult;
+}
+  async getAllCommentAPost(_postId: any, _page: any, _limit: any){
+    try {
+      const allComments: any = await this.postRepository.getAllCommentAPost(_postId,_page, _limit);
+      const commentsInformation = await Promise.all(allComments.map(async (comment: any) => {
+        const userInformationComment: any = await this.userRepository.getExistUserById(comment.ownerId);
+        // Create a PostDTO without the likes and totalLikes fields
+        const commentResult: commentDTO = {
+          _id: comment._id,
+          content: comment.content,
+          createAt: comment.createAt,
+          ownerId: comment.ownerId,
+          postId: comment.postId,
+          ownerAvatar: userInformationComment.avatar,
+          ownerDisplayname: userInformationComment.fullname,
+          parentId: comment.parentId
+        };
+        return commentResult;
+      }));
+      return commentsInformation;
+    } catch (error) {
+      console.log('Error when getting all posts:', error);
+      throw error;
+    }
   }
 }

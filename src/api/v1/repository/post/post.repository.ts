@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Post from '../post/post.entity';
+import Comment from '../post/comment/comment.entity';
 import Activity from '../activity/activity.entity';
 import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
@@ -9,6 +10,7 @@ import { getTotalLikesForPost } from '../../../../redis/redisUtils';
 import { PostDTO } from '../../DTO/post.dto';
 import { FollowRepository } from '../follow/follow.repository';
 import { getLocationFromAddress } from '../../services/location.service';
+import { commentDTO } from '../../DTO/comment.dto';
 const moment = require('moment');
 const { point, distance } = require('@turf/turf');
 
@@ -30,6 +32,20 @@ export class PostRepository {
                 _id: _postId
             });
             return post;
+        } catch (error) {
+            console.error('Error getting post by ID:', error);
+            throw error;
+        }
+    }
+
+    checkPostExists = async (_postId: any) => {
+        try {
+            const post = await Post.exists({
+                _id: _postId
+            });
+            if (post)
+                return true;
+            return false;
         } catch (error) {
             console.error('Error getting post by ID:', error);
             throw error;
@@ -315,5 +331,73 @@ export class PostRepository {
         }
     }
 
+    //#region COMMENT 
+    async getAllCommentAPost(_postId: any, _page: any, _limit: any) {
+        const comments = await Comment.find({ postId: _postId })
+            .sort({ createdAt: -1 })
+            .skip((_page - 1) * _limit)
+            .limit(_limit)
+            .exec();
+        return comments;
 
-}
+    }
+
+    async commentAPost(_ownerId: any, _postId: any, _content: any) {
+        const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
+        const checkPostExist = await this.checkPostExists(_postId);
+        if (!checkExistUser)
+            return ({ error: 'User not exist' });
+        if (!checkPostExist)
+            return ({ error: 'Post not exist' });
+        const newComment = new Comment({
+            postId: _postId,
+            ownerId: _ownerId,
+            content: _content,
+            parentId: null,
+            createAt: new Date()
+        });
+        newComment.save();
+        const userComment = await this.userRepository.getExistUserById(_ownerId);
+        const commentResult: commentDTO = ({
+            _id: newComment._id,
+            content: _content,
+            postId: _postId,
+            ownerId: _ownerId,
+            createAt: newComment.createAt,
+            ownerAvatar: userComment?.avatar,
+            ownerDisplayname: userComment?.fullname
+        })
+        return ({ success: 'Save success', comment: commentResult })
+    }
+
+    async replyAComment(_ownerId: any, _postId: any, _content: any, _commentParentId: any) {
+        const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
+        const checkPostExist = await this.checkPostExists(_postId);
+        if (!checkExistUser)
+            return ({ error: 'User not exist' });
+        if (!checkPostExist)
+            return ({ error: 'Post not exist' });
+        const newComment = new Comment({
+            postId: _postId,
+            ownerId: _ownerId,
+            content: _content,
+            parentId: _commentParentId,
+            createAt: new Date()
+        });
+        newComment.save();
+        const userComment = await this.userRepository.getExistUserById(_ownerId);
+        const commentResult: commentDTO = ({
+            _id: newComment._id,
+            content: _content,
+            postId: _postId,
+            ownerId: _ownerId,
+            createAt: newComment.createAt,
+            ownerAvatar: userComment?.avatar,
+            ownerDisplayname: userComment?.fullname,
+            parentId: _commentParentId
+        })
+        return ({ success: 'Save success', comment: commentResult })
+    }
+
+    //#endregion
+}   

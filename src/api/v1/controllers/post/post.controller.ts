@@ -160,4 +160,51 @@ export class PostController {
         return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
     }
   }
+
+  //#region COMMENT
+  commentAPost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if(!req.user){
+        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'User must login', null));
+      }
+      const userForCommentId = req.user.userId;
+      const postIdForComment = req.body.postId;
+      const contentForComment = req.body.content;
+      const parentId = req.body.parentId;
+
+      if(contentForComment == '')
+        return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, 'Comment not allowed blank' , null))
+      if(parentId){
+        const resultCommentReply: any = await this.postServiceInstance.replyAComment(userForCommentId, postIdForComment, contentForComment, parentId);
+        if(resultCommentReply.success){
+          return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, resultCommentReply.success, resultCommentReply.comment))
+        }
+        return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, resultCommentReply.error, null))
+      }
+      const resultComment: any = await this.postServiceInstance.commentAPost(userForCommentId, postIdForComment, contentForComment);
+      if(resultComment.success){
+        return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, resultComment.success, resultComment.comment))
+      }
+      return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, resultComment.error, null))
+    } catch (error: any) {
+        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+    }
+  }
+
+  getAllComment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;  
+      const postIdForGet = req.params.postId;
+      const comments = await this.postServiceInstance.getAllCommentAPost(postIdForGet,page, limit);
+      if(comments.length < 1){
+        return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of comment', null));
+      }
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', comments));
+    } catch (error) {
+      console.error('Error getting posts:', error);
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+    }
+  }
+  //#endregion COMMENT
 }
