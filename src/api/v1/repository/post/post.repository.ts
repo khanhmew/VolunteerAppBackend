@@ -354,7 +354,6 @@ export class PostRepository {
             ownerId: _ownerId,
             content: _content,
             parentId: null,
-            createAt: new Date()
         });
         newComment.save();
         const userComment = await this.userRepository.getExistUserById(_ownerId);
@@ -382,7 +381,6 @@ export class PostRepository {
             ownerId: _ownerId,
             content: _content,
             parentId: _commentParentId,
-            createAt: new Date()
         });
         newComment.save();
         const userComment = await this.userRepository.getExistUserById(_ownerId);

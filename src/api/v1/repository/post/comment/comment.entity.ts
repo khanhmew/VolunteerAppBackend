@@ -14,7 +14,7 @@ const ICommentSchema: Schema = new Schema(
     {
         postId: {type: String, require: true},
         ownerId: {type: String, required: true},
-        createdAt: {type: Date, required: false},
+        createdAt: {type: Date, default: Date.now },
         parentId: {type: String, require: false},
         content: {type: String, require: true},
     },
