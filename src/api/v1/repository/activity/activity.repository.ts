@@ -6,6 +6,7 @@ import Post from '../post/post.entity';
 import { UserJoinedBefore } from '../../../../shared/error/activity.error';
 import { sendVerificationEmail } from "../../services/firebase.service";
 import { ActDTO } from '../../DTO/activity.dto';
+import { generateQRCode } from "../../services/qrcode.service";
 
 export class ActivityRepository {
   createNewActivity = async (_post: any) => {
@@ -18,7 +19,9 @@ export class ActivityRepository {
       exprirationDate: _post.exprirationDate,
       numOfPeopleParticipated: 0,
       dateActivity: _post.dateActivity,
-      ownerId: _post.ownerId
+      ownerId: _post.ownerId,
+      isEnableQr: false,
+      qrCode: await generateQRCode(_post._id)
     })
     await activitySave.save();
     return activitySave;

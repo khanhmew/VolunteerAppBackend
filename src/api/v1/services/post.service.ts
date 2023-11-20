@@ -72,6 +72,9 @@ export class PostService {
       else if (error instanceof OrgNotActive) {
         throw new OrgNotActive('OrgNotActive');
       }
+      else{
+        console.log(error)
+      }
     }
   }
   async getAllPost(page: any, limit: any, userId: any) {

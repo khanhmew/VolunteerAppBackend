@@ -9,6 +9,8 @@ export interface IActivity {
     exprirationDate: Date,
     dateActivity: Date,
     ownerId: String,
+    isEnableQr: boolean;
+    qrCode: String
 }
 
 export interface IActivityModel extends IActivity, Document { }
@@ -23,6 +25,8 @@ const IActivitySchema: Schema = new Schema(
         isExprired: {type: Boolean, require: true},
         dateActivity: {type: Date, require: true},
         ownerId: {type: String, required: true},
+        isEnableQr: {type: Boolean, require: true},
+        qrCode: {type: String, required: true},
     },
     {
         versionKey: false
@@ -31,7 +35,7 @@ const IActivitySchema: Schema = new Schema(
 
 export default mongoose.model<IActivityModel>('Activity', IActivitySchema);
 
-export const DefaultUserData = (postId: String, address: String, exprirationDate: Date, dateActivity: Date, ownerId: String) => {
+export const DefaultActivityData = (postId: String, address: String, exprirationDate: Date, dateActivity: Date, ownerId: String) => {
     const iActivity: IActivity = {
         address: address,
         postId: postId,
@@ -40,7 +44,9 @@ export const DefaultUserData = (postId: String, address: String, exprirationDate
         exprirationDate: exprirationDate,
         isExprired: false,
         dateActivity: dateActivity,
-        ownerId: ownerId
+        ownerId: ownerId,
+        isEnableQr: false,
+        qrCode: ''
     }
     return iActivity;
 }
