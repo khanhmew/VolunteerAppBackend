@@ -21,5 +21,8 @@ export interface PostDTO {
     isJoin?: boolean;
     isFollow?: boolean;
     isExprired: boolean;
-    dateActivity?: Date
+    dateActivity?: Date;
+    qrcode?: string;
+    isAttended?: boolean;
+    isEnableQr?: string;
 }

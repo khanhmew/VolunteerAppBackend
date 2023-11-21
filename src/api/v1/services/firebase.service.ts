@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { Readable } from 'stream';
 import sharp from 'sharp';
 import nodemailer from 'nodemailer';
+import { parse, format } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const admin = require('firebase-admin');
 const serviceAccount = require('../../../config/firebase/serviceAccountKey.json');
@@ -119,6 +121,19 @@ const transporter = nodemailer.createTransport({
 });
 export const sendVerificationEmail = async (userEmail: string, datailPost: any) => {
   try {
+    const indochinaDate = new Date(datailPost.dateActivity);
+    const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
+
+    const formattedDate = indochinaDate.toLocaleString('en-US', {
+      timeZone: vietnamTimeZone,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+ 
     const mailOptions = {
       from: 'tochucthiennguyen.lienhe', 
       to: userEmail,
@@ -128,7 +143,7 @@ export const sendVerificationEmail = async (userEmail: string, datailPost: any) 
         
             <div style="background-color: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-top: 20px;">
               <h2>${datailPost.title}</h2>
-              <p><strong>Ngày tổ chức:</strong> ${datailPost.dateActivity}</p>
+              <p><strong>Ngày tổ chức:</strong> ${formattedDate}</p>
               <p><strong>Địa điểm:</strong> ${datailPost.address}</p>
               <p><strong>Mô tả:</strong> ${datailPost.content}</p>
             </div>`,

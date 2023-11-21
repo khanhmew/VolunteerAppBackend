@@ -7,13 +7,14 @@ import { UserJoinedBefore } from '../../../../shared/error/activity.error';
 import { sendVerificationEmail } from "../../services/firebase.service";
 import { ActDTO } from '../../DTO/activity.dto';
 import { generateQRCode } from "../../services/qrcode.service";
+import { PostRepository } from '../post/post.repository';
 
 export class ActivityRepository {
   createNewActivity = async (_post: any) => {
     const activitySave: any = new Activity({
       participants: _post.participants,
       participatedPeople: [],
-      postId: _post._id,
+      postId: _post.postId,
       address: _post.address,
       isExprired: false,
       exprirationDate: _post.exprirationDate,
@@ -27,9 +28,9 @@ export class ActivityRepository {
     return activitySave;
   }
 
-  getActivityById =  async(_idActivity: String) => {
+  getActivityById = async (_idActivity: String) => {
     try {
-      const activityFind =await Activity.findOne({
+      const activityFind = await Activity.findOne({
         _id: _idActivity
       });
       return activityFind;
@@ -39,22 +40,22 @@ export class ActivityRepository {
     }
   }
 
-  hasExistJoin = async(_userId: any, _activityId: any) => {
+  hasExistJoin = async (_userId: any, _activityId: any) => {
     const joinExist = await Join.findOne({
       userId: _userId,
-      activityId:  _activityId
+      activityId: _activityId
     });
-    if(joinExist)
+    if (joinExist)
       return true;
     return false;
   }
 
-  hasEmailJoinSend = async(_userId: any, _activityId: any) => {
+  hasEmailJoinSend = async (_userId: any, _activityId: any) => {
     const joinExist = await Join.findOne({
       userId: _userId,
-      activityId:  _activityId
+      activityId: _activityId
     });
-    if(joinExist?.isEmailsend)
+    if (joinExist?.isEmailsend)
       return true;
     return false;
   }
@@ -73,11 +74,11 @@ export class ActivityRepository {
     }
   };
 
-  findPostBaseActId= async (_activityId: any) => {
+  findPostBaseActId = async (_activityId: any) => {
     try {
       const post = await Post.findOne({ activityId: _activityId });
       if (!post) {
-        return ({error: 'Activity not found'})
+        return ({ error: 'Post not found' })
       }
       return post;
     } catch (error) {
@@ -85,72 +86,88 @@ export class ActivityRepository {
     }
   };
 
-  checkMaxParticipants = async(activityId: any)  => {
+  findActIdBasePost = async (_postId: any) => {
     try {
-      const activity = await Activity.findById(activityId);
+      const activity = await Activity.findOne({ postId: _postId });
   
       if (!activity) {
-        return {error: 'Activity not found'};
+        return { error: 'Activity not found' };
       }
   
+      return activity._id;
+    } catch (error) {
+      console.error('Error:', error);
+      return { error: error };
+    }
+  };
+
+
+  checkMaxParticipants = async (activityId: any) => {
+    try {
+      const activity = await Activity.findById(activityId);
+
+      if (!activity) {
+        return { error: 'Activity not found' };
+      }
+
       const maxParticipants = activity.participants;
       const currentParticipants = activity.numOfPeopleParticipated;
-  
+
       if (currentParticipants as number >= maxParticipants.valueOf()) {
-        return {error: 'This activity has reached its maximum participants limit'};
+        return { error: 'This activity has reached its maximum participants limit' };
       }
       return { success: 'That activity can join now' };
     } catch (error) {
       throw error;
     }
   }
-  
-  joinActivity =async (userId: any, activityId: any) => {
-      const checkCanJoin = await this.checkMaxParticipants(activityId);
-      if(checkCanJoin.success){
-        const user = await User.findById(userId);
-        if(user?.type.toLocaleLowerCase() == 'organization'){
-          return {error: 'Organization can not join activity'};
-        }
-        const activity = await Activity.findById(activityId);
-    
-        if (!user || !activity) {
-          return {error: 'User or Activity not found'};
-        }
-        const checkUserJoined = await this.hasExistJoin(userId, activityId);
-        if (checkUserJoined) {
-          return {error: 'User is already participating in this activity'};
-        }
-        if(activity.isExprired){
-          return {error: 'This activity is expried'};
-        }
-        if(activity.participants)
+
+  joinActivity = async (userId: any, activityId: any) => {
+    const checkCanJoin = await this.checkMaxParticipants(activityId);
+    if (checkCanJoin.success) {
+      const user = await User.findById(userId);
+      if (user?.type.toLocaleLowerCase() == 'organization') {
+        return { error: 'Organization can not join activity' };
+      }
+      const activity = await Activity.findById(activityId);
+
+      if (!user || !activity) {
+        return { error: 'User or Activity not found' };
+      }
+      const checkUserJoined = await this.hasExistJoin(userId, activityId);
+      if (checkUserJoined) {
+        return { error: 'User is already participating in this activity' };
+      }
+      if (activity.isExprired) {
+        return { error: 'This activity is expried' };
+      }
+      if (activity.participants)
         var joinNew: any = new Join({
           activityId: activity._id,
           userId: userId,
           isAttended: false,
           timeAttended: new Date(),
         });
-        joinNew.save();
-        if(joinNew){
-          activity.numOfPeopleParticipated = activity.numOfPeopleParticipated as number + 1;
-        }
-        await activity.save();
-        const PostInfor: any =  await this.findPostBaseActId(activityId);
-        const postSendMail: any = ({
-          dateActivity: activity.dateActivity,
-          content: PostInfor.content,
-          address: activity.address,
-          title: 'Nội dung chi tiết như sau:'
-        })
-        await sendVerificationEmail(user.email, postSendMail);
-        return {success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated};
-      } 
+      joinNew.save();
+      if (joinNew) {
+        activity.numOfPeopleParticipated = activity.numOfPeopleParticipated as number + 1;
+      }
+      await activity.save();
+      const PostInfor: any = await this.findPostBaseActId(activityId);
+      const postSendMail: any = ({
+        dateActivity: activity.dateActivity,
+        content: PostInfor.content,
+        address: activity.address,
+        title: 'Nội dung chi tiết như sau:'
+      })
+      await sendVerificationEmail(user.email, postSendMail);
+      return { success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated };
+    }
   }
 
   isJoined = async (userId: any, activityId: any) => {
     try {
-      const user = await User.findById(userId); 
+      const user = await User.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
@@ -164,12 +181,33 @@ export class ActivityRepository {
       throw error;
     }
   }
-  
-  checkAndSendMailForUser =  async (userId: any, activityId: any, detailPost: any) => {
+
+  isAttended = async (_userId: any, _activityId: any) => {
+    try {
+      const user = await User.findById(_userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const activity = await Activity.findById(_activityId);
+      if (!activity) {
+        throw new Error('Activity not found');
+      }
+      const joinExist = await Join.findOne({
+        userId: _userId,
+        activityId: _activityId
+      });
+      if(joinExist)
+        return true;
+      return false;
+    } catch (error) {
+      throw error;
+    }
+  }
+  checkAndSendMailForUser = async (userId: any, activityId: any, detailPost: any) => {
     try {
       const isSend = await this.hasEmailJoinSend(userId, activityId)
-      if(!isSend){
-        const user = await User.findById(userId); 
+      if (!isSend) {
+        const user = await User.findById(userId);
         if (!user) {
           throw new Error('User not found');
         }
@@ -179,29 +217,29 @@ export class ActivityRepository {
       throw error;
     }
   }
-  
+
 
   async getDetailsOfJoinedActivities(userId: any) {
     try {
       const joinedActivities = await Join.find({ userId: userId });
-  
+
       const detailedActivities = await Promise.all(
         joinedActivities.map(async (joinedActivity) => {
           const activityId = joinedActivity.activityId;
           const activityDetails = await Activity.findById(activityId);
-          const postForGet = await Post.findOne({activityId: activityId});
-          const owner = await User.findOne({_id: postForGet?.ownerId});
+          const postForGet = await Post.findOne({ activityId: activityId });
+          const owner = await User.findOne({ _id: postForGet?.ownerId });
           const actDetails: ActDTO = ({
-              _id: activityId,
-              _postId: postForGet?._id,
-              dateActivity: activityDetails?.dateActivity,
-              media: postForGet?.media[0],
-              ownerDisplayname: owner?.fullname
+            _id: activityId,
+            _postId: postForGet?._id,
+            dateActivity: activityDetails?.dateActivity,
+            media: postForGet?.media[0],
+            ownerDisplayname: owner?.fullname
           })
           return actDetails;
         })
       );
-  
+
       return detailedActivities;
     } catch (error) {
       console.error('Error getting details of joined activities:', error);
@@ -211,29 +249,27 @@ export class ActivityRepository {
   async getDetailsOfActivitiesCreated(_orgId: any) {
     try {
       const createdActivities = await Activity.find({ ownerId: _orgId });
-  
+
       const detailedActivities = await Promise.all(
         createdActivities.map(async (createdActivity) => {
           const activityId = createdActivity.id;
           const activityDetails = await Activity.findById(activityId);
-          const postForGet = await Post.findOne({activityId: activityId});
-          const owner = await User.findOne({_id: _orgId});
+          const postForGet = await Post.findOne({ activityId: activityId });
+          const owner = await User.findOne({ _id: _orgId });
           const actDetails: ActDTO = ({
-              _id: activityId,
-              _postId: postForGet?._id,
-              dateActivity: activityDetails?.dateActivity,
-              media: postForGet?.media[0],
-              ownerDisplayname: owner?.fullname
+            _id: activityId,
+            _postId: postForGet?._id,
+            dateActivity: activityDetails?.dateActivity,
+            media: postForGet?.media[0],
+            ownerDisplayname: owner?.fullname
           })
           return actDetails;
         })
       );
-  
+
       return detailedActivities;
     } catch (error) {
       console.error('Error getting details of joined activities:', error);
     }
   }
-
-  
 }

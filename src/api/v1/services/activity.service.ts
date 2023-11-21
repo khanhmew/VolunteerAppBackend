@@ -49,4 +49,13 @@ export class ActivityService {
       throw error; // Nếu bạn muốn ném lỗi để nó được xử lý ở nơi gọi hàm
     }
   }
+
+  attendnace = async(_postId: any, _userId: any)=>{
+    try {
+      const joinResult = await this.postRepository.attendance(_postId, _userId);
+      return joinResult;
+    } catch (error) {
+      return ({error: error})
+    }
+  }
 }

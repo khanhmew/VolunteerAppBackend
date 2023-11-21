@@ -1,7 +1,7 @@
 import QRCode from 'qrcode-svg';
 
-export async function generateQRCode(activityId: string): Promise<string> {
-  const data = `activityId:${activityId}`;
+export async function generateQRCode(postId: string): Promise<string> {
+  const data = `postId:${postId}`;
 
   // Pass options directly to the QRCode constructor
   const qr = new QRCode(data);

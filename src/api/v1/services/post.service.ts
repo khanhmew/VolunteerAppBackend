@@ -52,7 +52,7 @@ export class PostService {
         isExprired: activityInformation?.isExprired,
         dateActivity: activityInformation.dateActivity
       }
-      if (postSave) {
+      if (postSave) { 
         return postInformation;
       }
 
@@ -266,4 +266,5 @@ export class PostService {
       throw error;
     }
   }
+  
 }

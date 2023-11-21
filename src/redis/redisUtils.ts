@@ -21,3 +21,20 @@ export const unlikeForPost = (postId: string, userId: string) => {
 export const hasUserLikedPost = (postId: any, userId: string) => {
   return redisClient.sismember(`post_likes:${postId}`, userId);
 };
+
+//#region POST cache
+const CACHE_EXPIRY_SECONDS = 1800 // 30 phút 
+export const getCache = async (key: string): Promise<any | null> => {
+  const cachedData = await redisClient.get(key);
+  return cachedData ? JSON.parse(cachedData) : null;
+};
+
+export const updateCache = async (key: string, data: any): Promise<void> => {
+  await redisClient.setex(key, CACHE_EXPIRY_SECONDS, JSON.stringify(data));
+};
+
+export const cacheAllPosts = async (_posts: any): Promise<void> => {
+  await redisClient.setex('all_posts', CACHE_EXPIRY_SECONDS, JSON.stringify(_posts));
+};
+
+//#endregion POST cache

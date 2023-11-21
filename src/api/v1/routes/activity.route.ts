@@ -8,6 +8,7 @@ const activityControllerInstance = new ActivityController();
 activityRoute.put('/activity/:activityId', authenticateToken,activityControllerInstance.joinActivity)
 activityRoute.get('/activity/join', authenticateToken,activityControllerInstance.getDetailsOfJoinedActivities)
 activityRoute.get('/activity/create', authenticateToken,activityControllerInstance.getDetailsOfCreatedActivities)
+activityRoute.post('/activity/attendance/:postId', authenticateToken,activityControllerInstance.attendance)
 //#endregion
 
 

@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import Post from '../post/post.entity';
 import Comment from '../post/comment/comment.entity';
 import Activity from '../activity/activity.entity';
+import User from '../user/user.entity';
+import Join from '../activity/join.entity';
 import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
@@ -23,6 +25,7 @@ export class PostRepository {
     constructor() {
         this.userRepository = new UserRepository();
         this.activityRepository = new ActivityRepository();
+        this.followRepository = new FollowRepository();
         this.followRepository = new FollowRepository();
     }
 
@@ -90,11 +93,11 @@ export class PostRepository {
                 else {
                     throw new DateFormat('DateFormat');
                 }
-                await postSave.save();
+                const postResult = await postSave.save();
                 //#region POST TYPE -> CREATE POST 
                 if (postSave.type.toLowerCase() == 'activity') {
                     const activityCreate = new Activity({
-                        postId: postSave,
+                        postId: postResult._id,
                         address: orgInformationCreatePost.address,
                         participatedPeople: [],
                         exprirationDate: expirationDate,
@@ -277,7 +280,16 @@ export class PostRepository {
 
                 postDetail.likes = likes;
                 postDetail.totalLikes = likes.length;
-
+                const userForCheckType = await this.userRepository.getExistOrgById(_userId);
+                if(userForCheckType?.type.toLocaleLowerCase() == 'user' && isJoin == true)
+                {
+                    const isAttendedCheck = await this.activityRepository.isAttended(_userId, post.activityId);
+                    postDetail.isAttended = isAttendedCheck
+                }
+                else if(userForCheckType?.type.toLocaleLowerCase() == 'organization' && orgInformationPost._id == _userId){
+                    postDetail.qrCode = activityResult.qrCode;
+                    postDetail.isEnableQr = activityResult.isEnableQr;
+                }
                 return postDetail;
             }
 
@@ -398,4 +410,25 @@ export class PostRepository {
     }
 
     //#endregion
+
+
+    //attendance
+    async attendance(_postId: any, _userId: any) {
+        try {
+          const checkPostExist = Post.findById(_postId);
+          if (!checkPostExist)
+            return ({ error: 'Post does not exist' })
+          const checkUserType = await User.findById(_userId);
+          if (checkUserType?.type && checkUserType.type.trim().toLocaleLowerCase() === 'USER')
+            return ({ error: 'Type must be user' })
+          const activityIdForJoin =await this.activityRepository.findActIdBasePost(_postId);
+          const join = await Join.findOne({ activityId: activityIdForJoin, userId: _userId });
+          await Join.updateOne({ _id: join?._id }, { $set: { isAttended: true, timeAttended: new Date() } });
+          const postResult =await this.getDetailPost(_postId, _userId)
+          return ({ success: 'Verify success', join: postResult });
+        }
+        catch (error) {
+          return ({ error: error })
+        }
+      }
 }   

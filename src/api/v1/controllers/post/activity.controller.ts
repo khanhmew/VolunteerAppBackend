@@ -63,4 +63,21 @@ export class ActivityController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+    attendance = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userAttend = req.user.userId;
+            const postId = req.params.postId;
+            const joinResult: any=await this.activityServiceInstance.attendnace(postId, userAttend);
+            if (joinResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Attendace success', joinResult.join));
+            }
+            else{
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, joinResult.error, null));
+            }
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }
