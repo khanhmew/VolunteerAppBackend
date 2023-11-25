@@ -68,9 +68,15 @@ export const uploadImageFromFormData = async (fileData: any, remoteFileName: any
       console.error('Error uploading image:', error);
       reject(error);
     });
-
+    const fileName = file.name.substring(file.name.lastIndexOf('/') + 1);
+    
+    // Add "compressed_" to the beginning of the file name
+    const compressedFileName = `compressed_${fileName}`;
+    
+    // Construct the new path with the updated file name
+    const newPath = file.name.substring(0, file.name.lastIndexOf('/') + 1) + compressedFileName;
     stream.on('finish', () => {
-      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(file.name)}?alt=media`;
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/compressed%2F${encodeURIComponent(newPath)}?alt=media`;
       console.log('Uploaded image URL:', imageUrl);
       resolve(imageUrl);
     });
@@ -78,29 +84,6 @@ export const uploadImageFromFormData = async (fileData: any, remoteFileName: any
     // Ghi dữ liệu tải lên trực tiếp vào stream
     stream.end(fileData.buffer);
   });
-};
-
-export const uploadAndProcessImage = async (fileData: any, remoteFileName: any) => {
-  try {
-    // Giảm dung lượng hình ảnh trước khi tải lên
-    const processedImageBuffer = await sharp(fileData.buffer)
-      .resize({ width: 800 }) // Điều chỉnh kích thước (width: 800 pixel, tự điều chỉnh tỷ lệ chiều cao)
-      .jpeg({ quality: 70 }) // Nén hình ảnh sang định dạng JPEG với chất lượng 70%
-      .toBuffer();
-    const imageUrl = await uploadImageFromFormData(
-      {
-        buffer: processedImageBuffer,
-        size: processedImageBuffer.length,
-        mimetype: 'image/jpeg',
-      },
-      remoteFileName
-    );
-
-    return imageUrl;
-  } catch (error) {
-    console.error('Error processing and uploading image:', error);
-    throw error;
-  }
 };
 
 

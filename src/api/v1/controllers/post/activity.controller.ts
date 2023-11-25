@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { PostService } from "../../services/post.service";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
-import { getImageSize, uploadAndProcessImage, uploadImageFromFormData } from "../../services/firebase.service";
+import { getImageSize, uploadImageFromFormData } from "../../services/firebase.service";
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../../shared/error/post.error";
 import { ActivityService } from "../../services/activity.service";
 

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { PostService } from "../../services/post.service";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
-import { getImageSize, uploadAndProcessImage, uploadImageFromFormData } from "../../services/firebase.service";
+import { getImageSize, uploadImageFromFormData } from "../../services/firebase.service";
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from "../../../../shared/error/post.error";
 
 declare global {
@@ -38,7 +38,7 @@ export class PostController {
           // Log kích thước hình ảnh gốc
           console.log(`Image size before processing: ${uploadedImage.size} bytes`);
         
-          const imageUrl = await uploadAndProcessImage(uploadedImage, remoteFileName);
+          const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
           
           // Log kích thước hình ảnh sau khi xử lý
           console.log(`Image size after processing: ${imageUrl ? await getImageSize(imageUrl) : 'N/A'}`);

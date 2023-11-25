@@ -1,5 +1,5 @@
 // Import dependencies && init serverlication express
-import express, { Application, NextFunction, Request, Response } from 'express';
+import express, {Application, NextFunction, Request, Response } from 'express';
 import { saveLikeForPost, getTotalLikesForPost } from './src/redis/redisUtils';
 
 import bodyParser from 'body-parser';
