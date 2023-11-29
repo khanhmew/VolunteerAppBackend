@@ -8,7 +8,7 @@ import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';
-import { getTotalLikesForPost } from '../../../../redis/redisUtils';
+import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
 import { PostDTO } from '../../DTO/post.dto';
 import { FollowRepository } from '../follow/follow.repository';
 import { getLocationFromAddress } from '../../services/location.service';
@@ -119,6 +119,23 @@ export class PostRepository {
                     await postSave.save();
                 }
                 //#endregion POST TYPE
+                //#region REDIS CACHE
+                const cacheKey = `posts:page:1`;
+                let postsInformation: any = [];
+
+                // Kiểm tra xem danh sách postsInformation có trong cache hay không
+                const cachedPosts = await redisClient.get(cacheKey);
+                if (cachedPosts) {
+                    postsInformation = JSON.parse(cachedPosts);
+                }
+
+                // Kiểm tra xem post mới đã có trong cache hay chưa
+                const isPostInCache = postsInformation.some((postInfo: any) => postInfo._id === postResult._id);
+
+                if (!isPostInCache) {
+                    postsInformation.unshift(postSave);
+                    await redisClient.set(cacheKey, JSON.stringify(postsInformation));
+                }
                 return postSave;
             }
             else {
@@ -131,49 +148,87 @@ export class PostRepository {
 
     }
 
-    // async getAllPosts(page: any, limit: any, userId: any) {
+
+    // getAllPosts = async (page: any, limit: any) => {
     //     try {
     //         const skip = (page - 1) * limit;
 
-    //         const organizationsUserFollows = await this.followRepository.getAllFollowingIds(userId);
-
-    //         const allPosts = await Post.find()
+    //         const posts = await Post.find()
     //             .sort({ createdAt: -1 })
     //             .skip(skip)
     //             .limit(limit);
 
-    //         const postsOfFollowedOrganizations = [];
-    //         const otherPosts : any= [];
-
-    //         // Chia bài viết thành hai mảng riêng biệt
-    //         allPosts.forEach((post: any) => {
-    //             if (organizationsUserFollows.includes(post.ownerId.toString())) {
-    //                 postsOfFollowedOrganizations.push(post);
-    //             } else {
-    //                 otherPosts.push(post);
-    //             }
-    //         });
-
-    //         // Thêm bài viết từ tổ chức bạn đang theo dõi vào đầu mảng tất cả bài viết
-    //         postsOfFollowedOrganizations.push(...otherPosts);
-
-    //         return postsOfFollowedOrganizations;
+    //         return posts;
     //     } catch (error) {
     //         console.error('Error getting all posts:', error);
     //         throw error;
     //     }
     // }
 
-    getAllPosts = async (page: any, limit: any) => {
+    getAllPosts = async (page: any, limit: any, userId: any) => {
         try {
-            const skip = (page - 1) * limit;
+            var cacheJoinedPost: any = [];
+            const cachedPosts = await redisClient.get(`posts:page:${page}`);
+            const isUserLoggedIn = !!userId;
+            if (!isUserLoggedIn && cachedPosts) {
+                return { posts: JSON.parse(cachedPosts), joinedPost: [] };
+            }
+            const cachedPostidJoined = await redisClient.get(`posts_joined:page:${page}:userId:${userId}`);
+            if (cachedPosts && cachedPostidJoined) {
+                return { posts: JSON.parse(cachedPosts), joinedPost: JSON.parse(cachedPostidJoined) };
+            } else {
+                const skip = (page - 1) * limit;
 
-            const posts = await Post.find()
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
+                const posts = await Post.find()
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
 
-            return posts;
+                const postsInformation = await Promise.all(posts.map(async (post: any) => {
+                    const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
+                    let isJoin: boolean | undefined = undefined;
+                    let isUserFollowingOrg: boolean | undefined = undefined;
+                    if (isUserLoggedIn) {
+                        isJoin = await this.activityRepository.isJoined(userId, post.activityId);
+                        const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
+                        isUserFollowingOrg = userFollowedOrgs.some((org: any) => org.followingId == post.ownerId);
+                    }
+                    const activityInformation: any = await this.activityRepository.getActivityById(post.activityId);
+                    // Create a PostDTO without the likes and totalLikes fields
+                    const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
+                        _id: post._id,
+                        type: post.type,
+                        ownerId: post.ownerId,
+                        ownerDisplayname: orgInformationCreatePost.fullname,
+                        ownerAvatar: orgInformationCreatePost.avatar,
+                        address: orgInformationCreatePost.address,
+                        updatedAt: post.updatedAt,
+                        createdAt: post.createdAt,
+                        scope: post.scope,
+                        content: post.content,
+                        media: post.media,
+                        activityId: post.activityId,
+                        exprirationDate: activityInformation?.exprirationDate,
+                        // isJoin,
+                        numOfComment: post.numOfComment,
+                        commentUrl: post.commentUrl,
+                        participants: activityInformation.participants,
+                        // isFollow: isUserFollowingOrg,
+                        totalUserJoin: activityInformation.numOfPeopleParticipated,
+                        isExprired: activityInformation?.isExprired
+                    };
+                    if (isJoin) {
+                        console.log(`post user join: ` + post._id)
+                        cacheJoinedPost.push(post._id)
+                    }
+                    return postDTO;
+                }));
+                await redisClient.set(`posts:page:${page}`, JSON.stringify(postsInformation));
+                await redisClient.set(`posts_joined:page:${page}:userId:${userId}`, JSON.stringify(cacheJoinedPost));
+                await redisClient.expire(`posts:page:${page}`, 900);
+                await redisClient.expire(`posts_joined:page:${page}:userId:${userId}`, 900); //15 phút
+                return { posts: postsInformation, joinedPost: cacheJoinedPost };
+            }
         } catch (error) {
             console.error('Error getting all posts:', error);
             throw error;
@@ -281,12 +336,11 @@ export class PostRepository {
                 postDetail.likes = likes;
                 postDetail.totalLikes = likes.length;
                 const userForCheckType = await this.userRepository.getExistOrgById(_userId);
-                if(userForCheckType?.type.toLocaleLowerCase() == 'user' && isJoin == true)
-                {
+                if (userForCheckType?.type.toLocaleLowerCase() == 'user' && isJoin == true) {
                     const isAttendedCheck = await this.activityRepository.isAttended(_userId, post.activityId);
                     postDetail.isAttended = isAttendedCheck
                 }
-                else if(userForCheckType?.type.toLocaleLowerCase() == 'organization' && orgInformationPost._id == _userId){
+                else if (userForCheckType?.type.toLocaleLowerCase() == 'organization' && orgInformationPost._id == _userId) {
                     postDetail.qrCode = activityResult.qrCode;
                     postDetail.isEnableQr = activityResult.isEnableQr;
                 }
@@ -415,20 +469,20 @@ export class PostRepository {
     //attendance
     async attendance(_postId: any, _userId: any) {
         try {
-          const checkPostExist = Post.findById(_postId);
-          if (!checkPostExist)
-            return ({ error: 'Post does not exist' })
-          const checkUserType = await User.findById(_userId);
-          if (checkUserType?.type && checkUserType.type.trim().toLocaleLowerCase() === 'USER')
-            return ({ error: 'Type must be user' })
-          const activityIdForJoin =await this.activityRepository.findActIdBasePost(_postId);
-          const join = await Join.findOne({ activityId: activityIdForJoin, userId: _userId });
-          await Join.updateOne({ _id: join?._id }, { $set: { isAttended: true, timeAttended: new Date() } });
-          const postResult =await this.getDetailPost(_postId, _userId)
-          return ({ success: 'Verify success', join: postResult });
+            const checkPostExist = Post.findById(_postId);
+            if (!checkPostExist)
+                return ({ error: 'Post does not exist' })
+            const checkUserType = await User.findById(_userId);
+            if (checkUserType?.type && checkUserType.type.trim().toLocaleLowerCase() === 'USER')
+                return ({ error: 'Type must be user' })
+            const activityIdForJoin = await this.activityRepository.findActIdBasePost(_postId);
+            const join = await Join.findOne({ activityId: activityIdForJoin, userId: _userId });
+            await Join.updateOne({ _id: join?._id }, { $set: { isAttended: true, timeAttended: new Date() } });
+            const postResult = await this.getDetailPost(_postId, _userId)
+            return ({ success: 'Verify success', join: postResult });
         }
         catch (error) {
-          return ({ error: error })
+            return ({ error: error })
         }
-      }
+    }
 }   

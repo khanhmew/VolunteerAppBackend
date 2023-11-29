@@ -82,7 +82,8 @@ export class PostController {
         userIdForCheckJoin = req.user.userId;
       } 
       const posts = await this.postServiceInstance.getAllPost(page, limit, userIdForCheckJoin);
-      if(posts.length < 1){
+      console.log(`${posts}`)
+      if(posts.posts.length < 1){
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));

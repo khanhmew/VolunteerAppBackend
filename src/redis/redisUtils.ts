@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 
-const redisClient = new Redis({
+export const redisClient = new Redis({
   port: 12586,
   host: 'redis-12586.c244.us-east-1-2.ec2.cloud.redislabs.com',
   password: 'h0StMgZf2IilbJnKH0gmwYkgQuLET8x4',
@@ -14,6 +14,7 @@ export const saveLikeForPost = (postId: string, userId: string) => {
 export const getTotalLikesForPost = (postId: string) => {
   return redisClient.smembers(`post_likes:${postId}`);
 };
+
 export const unlikeForPost = (postId: string, userId: string) => {
   return redisClient.srem(`post_likes:${postId}`, userId);
 };
@@ -38,3 +39,9 @@ export const cacheAllPosts = async (_posts: any): Promise<void> => {
 };
 
 //#endregion POST cache
+
+
+
+
+//#region JOIN cache
+//#endregion

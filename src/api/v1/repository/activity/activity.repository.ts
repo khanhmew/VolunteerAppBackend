@@ -8,6 +8,7 @@ import { sendVerificationEmail } from "../../services/firebase.service";
 import { ActDTO } from '../../DTO/activity.dto';
 import { generateQRCode } from "../../services/qrcode.service";
 import { PostRepository } from '../post/post.repository';
+import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
 
 export class ActivityRepository {
   createNewActivity = async (_post: any) => {
@@ -161,6 +162,13 @@ export class ActivityRepository {
         title: 'Nội dung chi tiết như sau:'
       })
       await sendVerificationEmail(user.email, postSendMail);
+      const pattern = `posts_joined:page:*:userId:${userId}`;
+      const keysToDelete = await redisClient.keys(pattern);
+
+      if (keysToDelete.length > 0) {
+        await redisClient.del(keysToDelete);
+      }
+
       return { success: 'Join success', numOfPeopleParticipated: activity.numOfPeopleParticipated };
     }
   }

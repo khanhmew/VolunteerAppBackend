@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ResponseBase, ResponseStatus } from "../shared/response/response.payload";
 
 const jwt = require('jsonwebtoken');
-const SECRETKEY = process.env.SECRETKEY ?? '';
+export const SECRETKEY = process.env.SECRETKEY ?? '';
 
 declare global {
     namespace Express {

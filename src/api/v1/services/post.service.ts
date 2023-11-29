@@ -30,31 +30,7 @@ export class PostService {
   async savePost(_post: any) {
     try {
       const postSave = await this.postRepository.savePost(_post);
-      const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(postSave.ownerId);
-      const activityInformation: any = await this.activityRepository.getActivityById(postSave.activityId);
-      const postInformation = {
-        _id: postSave._id,
-        type: postSave.type,
-        ownerId: postSave.ownerId,
-        ownerDisplayname: orgInformationCreatePost.fullname,
-        ownerAvatar: orgInformationCreatePost.avatar,
-        address: orgInformationCreatePost.address,
-        updatedAt: postSave.updatedAt,
-        exprirationDate: activityInformation.exprirationDate,
-        scope: postSave.scope,
-        content: postSave.content,
-        media: postSave.media,
-        activityId: postSave.activityId,
-        numOfComment: postSave.numOfComment,
-        commentUrl: postSave.commentUrl,
-        participatedPeople: [],
-        participants: activityInformation.participants,
-        isExprired: activityInformation?.isExprired,
-        dateActivity: activityInformation.dateActivity
-      }
-      if (postSave) { 
-        return postInformation;
-      }
+      return postSave; 
 
     } catch (error: any) {
       if (error instanceof PostMustCreateByOrg) {
@@ -79,45 +55,8 @@ export class PostService {
   }
   async getAllPost(page: any, limit: any, userId: any) {
     try {
-      const allPosts: any = await this.postRepository.getAllPosts(page, limit);
-      const isUserLoggedIn = !!userId;
-      const postsInformation = await Promise.all(allPosts.map(async (post: any) => {
-        const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(post.ownerId);
-        let isJoin: boolean | undefined = undefined;
-        let isUserFollowingOrg: boolean | undefined = undefined;
-        if (isUserLoggedIn) {
-          isJoin = await this.activityRepository.isJoined(userId, post.activityId);
-          const userFollowedOrgs = await this.followRepository.getOrgsFollowedByUser(userId);
-          isUserFollowingOrg = userFollowedOrgs.some((org: any) => org.followingId == post.ownerId);
-        }
-        const activityInformation: any = await this.activityRepository.getActivityById(post.activityId); 
-        // Create a PostDTO without the likes and totalLikes fields
-        const postDTO: Omit<PostDTO, 'likes' | 'totalLikes'> = {
-          _id: post._id,
-          type: post.type,
-          ownerId: post.ownerId,
-          ownerDisplayname: orgInformationCreatePost.fullname,
-          ownerAvatar: orgInformationCreatePost.avatar,
-          address: orgInformationCreatePost.address,
-          updatedAt: post.updatedAt,
-          createdAt: post.createdAt,
-          scope: post.scope,
-          content: post.content,
-          media: post.media,
-          activityId: post.activityId,
-          exprirationDate: activityInformation?.exprirationDate,
-          isJoin,
-          numOfComment: post.numOfComment,
-          commentUrl: post.commentUrl,
-          participants: activityInformation.participants,
-          isFollow: isUserFollowingOrg,
-          totalUserJoin: activityInformation.numOfPeopleParticipated,
-          isExprired: activityInformation?.isExprired
-        };
-        return postDTO;
-      }));
-  
-      return postsInformation;
+      const allPosts: any = await this.postRepository.getAllPosts(page, limit, userId);
+      return allPosts;
     } catch (error) {
       console.log('Error when getting all posts:', error);
       throw error;
