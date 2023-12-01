@@ -7,6 +7,7 @@ import { serverConfig } from './src/config/server.config';
 import mongoose from 'mongoose';
 import userRoute from './src/api/v1/routes/user.route';
 import authRoute from './src/api/v1/routes/auth.route';
+import chatRoute from './src/api/v1/routes/chat.route';
 import activityRoute from './src/api/v1/routes/activity.route';
 import axios from 'axios';
 import { CORSMiddleware } from './src/middleware/CORS.middleware';
@@ -73,6 +74,7 @@ const startHTTPServer = () => {
   routes.use(userRoute);
   routes.use(authRoute);
   routes.use(postRoute);
+  routes.use(chatRoute);
   routes.use(activityRoute);
 
   // server.use('',  (req: Request, res: Response, next: NextFunction) => {
@@ -92,11 +94,12 @@ const startHTTPServer = () => {
   }
   getIP();
 }
-
 const startSocketIOServer = () => {
+  const ioPort = serverConfig.socketIOServer.port as number;
   const socketIO = new SocketIOServer();
-  socketIO.start(serverConfig.socketIOServer.port as number);
+  socketIO.start(ioPort, () => {
+    console.log(`⚡️ [io]: Socket IO server running at: http://localhost:${ioPort}`);
+  });
 }
-
 startHTTPServer();
 startSocketIOServer();

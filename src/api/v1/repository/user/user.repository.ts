@@ -20,9 +20,25 @@ export class UserRepository {
         // });
         // return userToStore.save();
     }
-    checkUserExist = async(_userId: any) => {
-        const result = await User.exists({_id: _userId});
-        if(result)
+
+    async getUserType(userId: string): Promise<string | null> {
+        try {
+          const user = await User.findById(userId);
+          if (user) {
+            return user.type === 'Organization' ? user.type : null;
+          } else {
+            return null; 
+          }
+        } catch (error) {
+          console.error('Error getting user type:', error);
+          return null;
+        }
+      }
+      
+
+    checkUserExist = async (_userId: any) => {
+        const result = await User.exists({ _id: _userId });
+        if (result)
             return true;
         return false;
     }
@@ -43,7 +59,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username','address']);
+            }).select(['_id', 'phone', 'fullname', 'password', 'avatar', 'email', 'username', 'address']);
             return user;
         } catch (error) {
             console.error('Error getting user by ID:', error);
@@ -56,7 +72,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email','address', 'username', 'isActiveOrganization', 'imageAuthenticate']);
+            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email', 'address', 'username', 'isActiveOrganization', 'imageAuthenticate']);
             return user;
         } catch (error) {
             console.error('Error getting org by ID:', error);
@@ -119,7 +135,7 @@ export class UserRepository {
                     changes, // Dữ liệu cần cập nhật
                     { new: true } // Tùy chọn để trả về người dùng đã cập nhật
                 );
-                const userResultForUpdate : any= {
+                const userResultForUpdate: any = {
                     _id: updatedUser?.id,
                     type: updatedUser?.type,
                     fullname: updatedUser?.fullname,
@@ -128,11 +144,10 @@ export class UserRepository {
                     avatar: updatedUser?.avatar,
                     email: updatedUser?.email,
                     address: updatedUser?.address,
-                    
+
                 };
-                if(updatedUser?.type.toLowerCase() == 'organization')
-                {
-                    userResultForUpdate.isActive= updatedUser?.isActiveOrganization;
+                if (updatedUser?.type.toLowerCase() == 'organization') {
+                    userResultForUpdate.isActive = updatedUser?.isActiveOrganization;
                 }
                 return { userResultForUpdate };
             } catch (error) {
@@ -177,7 +192,7 @@ export class UserRepository {
             throw new AccountNotFoundError('Organization not found');
         }
         if (orgForActive.type == 'Organization') {
-            if(userForCheckAdmin.type == 'Admin'){
+            if (userForCheckAdmin.type == 'Admin') {
                 if (orgForActive.isActiveOrganization) {
                     throw new OrgActiveBefore('OrgActiveBefore');
                 }
@@ -187,10 +202,10 @@ export class UserRepository {
                     return activeOrg;
                 }
             }
-            else{
+            else {
                 throw new AccountTypeNotAdmin('AccountTypeNotAdmin');
             }
-            
+
         } else {
             throw new AccountTypeNotOrg('AccountTypeNotOrg');
         }

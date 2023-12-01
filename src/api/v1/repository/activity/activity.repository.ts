@@ -29,6 +29,15 @@ export class ActivityRepository {
     return activitySave;
   }
 
+  async isValidActivityId(activityId: string): Promise<boolean> {
+    try {
+      const activity = await Activity.findById(activityId);
+      return !!activity; 
+    } catch (error) {
+      console.error('Error checking activityId validity:', error);
+      return false;
+    }
+  }
   getActivityById = async (_idActivity: String) => {
     try {
       const activityFind = await Activity.findOne({
@@ -184,7 +193,25 @@ export class ActivityRepository {
         throw new Error('Activity not found');
       }
       const isUserJoined = await this.hasExistJoin(userId, activityId);
+      console.log(`isUserJoined: ${isUserJoined}`)
       return isUserJoined;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  isJoinedAct = async (userId: any, activityId: any) => {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return {error: 'User not found' }
+      }
+      const activity = await Activity.findById(activityId);
+      if (!activity) {
+        return {error: 'Activity not found' }
+      }
+      const isUserJoined = await this.hasExistJoin(userId, activityId);
+      return {success: '', join: isUserJoined};
     } catch (error) {
       throw error;
     }

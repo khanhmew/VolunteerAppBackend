@@ -25,4 +25,7 @@ export interface PostDTO {
     qrcode?: string;
     isAttended?: boolean;
     isEnableQr?: string;
+    isJoinedGroupChat?: boolean;
+    isValidGroupChat ?: boolean;
+    groupChatId ?: string
 }
