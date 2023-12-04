@@ -43,49 +43,6 @@ export class UserController {
     }
 
 
-    // updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
-    //     try {
-    //         // Lấy thông tin mới từ request body hoặc bất kỳ nguồn nào khác
-    //         const newUser: any = {
-    //             id: req.user.id,
-    //             username: req.body.username,
-    //             email: req.body.email,
-    //             fullname: req.body.fullname,
-    //             password: req.body.password,
-    //             phone: req.body.phone,
-    //         };
-    //         console.log("new pass: " + newUser.password);
-    //         // Kiểm tra xem request có chứa avatar không
-    //         if (req.file) {
-    //             // Lưu ảnh từ form data và nhận liên kết ảnh
-    //             const uploadedFile = req.file;
-    //             const remoteFileName = `avatars/${req.user.id}/${uploadedFile.originalname}`;
-    //             const imageUrl = await uploadImageFromFormData(uploadedFile, remoteFileName);
-
-    //             // Lưu liên kết ảnh vào newUser.avatar
-    //             newUser.avatar = imageUrl;
-    //         }
-
-    //         // Gọi hàm updateUserProfile để cập nhật thông tin người dùng
-    //         const updatedUser = await this.userServiceInstance.updateUserProfile(newUser);
-
-    //         // Kiểm tra xem hàm updateUserProfile có trả về một user đã được cập nhật không
-    //         if (updatedUser) {
-    //             // Trả về phản hồi thành công nếu cập nhật thành công
-    //             return res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
-    //         } else {
-    //             // Trả về phản hồi nếu không có thông tin nào thay đổi
-    //             return res.status(200).json({ message: 'No changes to update' });
-    //         }
-    //     } catch (error) {
-    //         if (error instanceof AccountNotFoundError) {
-    //             return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Account not found', null))
-    //         }
-    //         console.error('Error:', error);
-    //         return res.status(500).json({ message: 'Internal server error' });
-    //     }
-    // };
-
     updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
         try {
             if (req.user.userId == req.query.userid) {
@@ -145,7 +102,7 @@ export class UserController {
                 if (uploadedImages && uploadedImages.length > 0) {
                     const imageUrls = [];
                     for (const uploadedImage of uploadedImages) {
-                        const remoteFileName = `avatars/${req.user.userId}/${uploadedImage.originalname}`;
+                        const remoteFileName = `verify/${req.user.userId}/${uploadedImage.originalname}`;
                         const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
                         imageUrls.push(imageUrl);
                     }
