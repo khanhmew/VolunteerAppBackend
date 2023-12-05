@@ -11,4 +11,8 @@ authRoute.post('/login', RateLimit(1, 5),authControllerInstance.authenticateUser
 authRoute.post('/signup', authControllerInstance.signup);
 authRoute.get('/checkUsername', authControllerInstance.checkUsernameExist);
 authRoute.get('/profile/:orgId', authenticateToken,authControllerInstance.getProfile);
+
+//#region ADMIN
+authRoute.post('/login/admin', authenticateToken,authControllerInstance.authenticateAdmin);
+//#endregion ADMIN
 export default authRoute;

@@ -2,9 +2,9 @@ import {
   ResponseBase,
   ResponseStatus,
 } from "../../../shared/response/response.payload";
-import { UserDomainModel } from "../model/user.domain.model";
 import { AuthRepository } from "../repository/auth/auth.repository";
 import { UserRepository } from "../repository/user/user.repository";
+import { PermissionRepository } from "../repository/auth/permission.repository";
 import {
   AccountNotFoundError,
   WrongPasswordError,
@@ -20,14 +20,14 @@ import {
 import { AnyKeys } from "mongoose";
 
 export class AuthService {
-  private readonly userDomainModel!: UserDomainModel;
   private readonly authRepository!: AuthRepository;
   private readonly userRepository!: UserRepository;
+  private readonly permissionRepository!: PermissionRepository;
 
   constructor() {
-    this.userDomainModel = new UserDomainModel();
     this.authRepository = new AuthRepository();
     this.userRepository = new UserRepository();
+    this.permissionRepository = new PermissionRepository();
   }
 
   async authenticate(_username: String, _password: String) {
@@ -36,7 +36,7 @@ export class AuthService {
         _username,
         _password
       );
-      if (authResult.userResult || authResult.orgResult)
+      if (authResult?.userResult || authResult?.orgResult)
         return authResult;
     } catch (error) {
       if (error instanceof AccountNotFoundError) {
@@ -48,6 +48,30 @@ export class AuthService {
         throw error;
       }
     }
+  }
+
+  async authenticateAdmin(_username: any, _password: any) {
+    try {
+      const authResult = await this.authRepository.authenticateAdmin(
+        _username,
+        _password
+      );
+      if (authResult?.adminResult || authResult?.orgResult || authResult?.superAdResult)
+        return authResult;
+    } catch (error) {
+      if (error instanceof AccountNotFoundError) {
+        throw new AccountNotFoundError('Account not found');
+      } else if (error instanceof WrongPasswordError) {
+        throw new WrongPasswordError('Wrong password');
+      } else {
+        console.error("Error: ", error);
+        throw error;
+      }
+    }
+  }
+
+  createNewPermission(_roleId: any, _permissionId: any){
+    this.permissionRepository.createNewPermission(_roleId, _permissionId)
   }
 
   async register(user: any) {

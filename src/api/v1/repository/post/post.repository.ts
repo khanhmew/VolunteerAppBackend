@@ -4,7 +4,6 @@ import Comment from '../post/comment/comment.entity';
 import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
 import Join from '../activity/join.entity';
-import { UserDomainModel } from '../../model/user.domain.model';
 import { UserRepository } from '../user/user.repository';
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';

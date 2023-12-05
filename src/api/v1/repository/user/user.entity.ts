@@ -13,13 +13,14 @@ export interface IUser {
     imageAuthenticate: Array<String>;
     address: String;
     sex: String;
+    roleId: string
 }
 
 export interface IUserModel extends IUser, Document { }
 
 const IUserSchema: Schema = new Schema(
     {
-        type: {type: String, required: true},
+        type: {type: String, required: false},
         fullname: { type: String, required: true },
         avatar: { type: String, required: false },
         email: { type: String, required: true, unique: false },
@@ -30,7 +31,8 @@ const IUserSchema: Schema = new Schema(
         isActiveOrganization: {type: Boolean, required: false},
         imageAuthenticate: { type: Array<String> , required: false},
         address: {type: String, required: false},
-        sex: {type: String, required: false}
+        sex: {type: String, required: false},
+        roleId: {type: String, required: false},
     },
     {
         versionKey: false
@@ -38,21 +40,3 @@ const IUserSchema: Schema = new Schema(
 );
 
 export default mongoose.model<IUserModel>('User', IUserSchema);
-
-export const DefaultUserData = (type: string, email: string, fullname: string, username: string, passwordHash: string, phone: string) => {
-    const iUser: IUser = {
-        type: type,
-        email: email,
-        fullname: fullname,
-        username: username,
-        phone: phone,
-        avatar: '',
-        initTime: new Date(),
-        password: passwordHash,
-        isActiveOrganization: false,
-        imageAuthenticate: [],
-        address: '',
-        sex:''
-    }
-    return iUser;
-}

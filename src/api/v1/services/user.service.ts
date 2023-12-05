@@ -3,7 +3,6 @@ import {
   ResponseBase,
   ResponseStatus,
 } from "../../../shared/response/response.payload";
-import { UserDomainModel } from "../model/user.domain.model";
 import { FollowRepository } from "../repository/follow/follow.repository";
 import { IUser } from "../repository/user/user.entity";
 import { UserRepository } from "../repository/user/user.repository";
