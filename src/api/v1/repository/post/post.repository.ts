@@ -12,6 +12,7 @@ import { PostDTO } from '../../DTO/post.dto';
 import { FollowRepository } from '../follow/follow.repository';
 import { getLocationFromAddress } from '../../services/location.service';
 import { commentDTO } from '../../DTO/comment.dto';
+import { ChatRepository } from '../chat/chat.respoitory';
 const moment = require('moment');
 const { point, distance } = require('@turf/turf');
 
@@ -20,12 +21,14 @@ export class PostRepository {
     private readonly userRepository!: UserRepository;
     private readonly activityRepository!: ActivityRepository;
     private readonly followRepository!: FollowRepository;
+    private readonly chatRepository!: ChatRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
         this.activityRepository = new ActivityRepository();
         this.followRepository = new FollowRepository();
         this.followRepository = new FollowRepository();
+        this.chatRepository = new ChatRepository();
     }
 
     checkPostExist = async (_postId: any) => {
@@ -217,7 +220,6 @@ export class PostRepository {
                         isExprired: activityInformation?.isExprired
                     };
                     if (isJoin) {
-                        console.log(`post user join: ` + post._id)
                         cacheJoinedPost.push(post._id)
                     }
                     return postDTO;
@@ -269,7 +271,6 @@ export class PostRepository {
             const post: any = await Post.findOne({ _id: _postId });
             const activityResult: any = await this.activityRepository.getActivityById(post.activityId);
             const orgInformationPost: any = await this.userRepository.getExistOrgById(post.ownerId);
-
             if (_userId == '') {
                 const postDetail: PostDTO = {
                     _id: post._id,
@@ -305,7 +306,7 @@ export class PostRepository {
             else {
                 const isJoin: any = await this.activityRepository.isJoined(_userId, post.activityId);
                 const isFollowing = await this.followRepository.isUserFollowingOrg(_userId, post.ownerId);
-                const postDetail: any = {
+                const postDetail: PostDTO = {
                     _id: post._id,
                     type: post.type,
                     ownerId: post.ownerId,
@@ -316,6 +317,7 @@ export class PostRepository {
                     exprirationDate: activityResult.exprirationDate,
                     scope: post.scope,
                     content: post.content,
+                    createdAt: post.createAt,
                     media: post.media,
                     activityId: post.activityId,
                     numOfComment: post.numOfComment,
@@ -329,7 +331,12 @@ export class PostRepository {
                     isExprired: activityResult?.isExprired,
                     dateActivity: activityResult.dateActivity
                 };
-
+                const groupChat = await this.chatRepository.findGroupByActID(_userId, post.activityId)
+                if(groupChat?.success)
+                {
+                    postDetail.groupChatId= groupChat.groupId;
+                    postDetail.isJoinGroupChat = groupChat.isJoinedGroup;
+                }
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
 
                 postDetail.likes = likes;
@@ -340,7 +347,7 @@ export class PostRepository {
                     postDetail.isAttended = isAttendedCheck
                 }
                 else if (userForCheckType?.type.toLocaleLowerCase() == 'organization' && orgInformationPost._id == _userId) {
-                    postDetail.qrCode = activityResult.qrCode;
+                    postDetail.qrcode = activityResult.qrCode;
                     postDetail.isEnableQr = activityResult.isEnableQr;
                 }
                 return postDetail;

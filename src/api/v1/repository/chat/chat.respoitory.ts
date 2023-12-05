@@ -23,6 +23,20 @@ export class ChatRepository {
         }
     }
 
+    async findGroupByActID(_userId: any,_activityId: any){
+        try {
+            const group = await Group.findOne({activityId: _activityId});
+            if(group) 
+            {
+                const isUserJoined = await this.hasExistJoin(_userId, group._id);
+                return {success: 'ok', groupId: group._id, isJoinedGroup: isUserJoined}
+            }
+            return {error:'Group not exist'};
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     hasExistJoin = async (_userId: any, _groupId: any) => {
         const joinExist = await Member.findOne({
           userId: _userId,

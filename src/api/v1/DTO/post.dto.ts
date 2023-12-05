@@ -19,6 +19,7 @@ export interface PostDTO {
     likes?: string[];
     totalLikes?: number;
     isJoin?: boolean;
+    isFollowing ?: boolean;
     isFollow?: boolean;
     isExprired: boolean;
     dateActivity?: Date;
@@ -27,5 +28,6 @@ export interface PostDTO {
     isEnableQr?: string;
     isJoinedGroupChat?: boolean;
     isValidGroupChat ?: boolean;
-    groupChatId ?: string
+    groupChatId ?: string;
+    isJoinGroupChat ?: boolean
 }
