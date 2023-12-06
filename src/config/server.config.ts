@@ -6,6 +6,13 @@ const MONGODB_USERNAME = process.env.MONGODB_USERNAME ?? '';
 const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD ?? '';
 const MONGODB_DATABASE_NAME = process.env.MONGODB_DATABASE_NAME ?? '';
 
+const POSTGRE_HOST = process.env.POSTGRE_HOST ?? '';
+const POSTGRE_PORT = process.env.POSTGRE_PORT ?? '';
+const POSTGRE_DATABASE_NAME = process.env.POSTGRE_DATABASE_NAME ?? '';
+const POSTGRE_USERNAME = process.env.POSTGRE_USERNAME ?? '';
+const POSTGRE_PASSWORD = process.env.POSTGRE_PASSWORD ?? '';
+
+
 const MONGODB_URL = `mongodb+srv://
 ${MONGODB_USERNAME}:${MONGODB_PASSWORD}
 @cluster0.imlcljm.mongodb.net/${MONGODB_DATABASE_NAME}`;
@@ -21,6 +28,13 @@ const MAIL_PASSWORD = process.env.MAIL_SERVER_PASSWORD;
 export const serverConfig = {
   mongo: {
     url: MONGODB_URL
+  },
+  postgre:{
+    user: POSTGRE_USERNAME,
+    password:POSTGRE_PASSWORD,
+    host: POSTGRE_HOST, 
+    port: 5432, 
+    database: POSTGRE_DATABASE_NAME,
   },
   server: {
     port: SERVER_PORT

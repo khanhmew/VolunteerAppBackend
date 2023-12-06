@@ -1,7 +1,7 @@
 // Import dependencies && init serverlication express
 import express, {Application, NextFunction, Request, Response } from 'express';
 import { saveLikeForPost, getTotalLikesForPost } from './src/redis/redisUtils';
-
+const { Client } = require('pg');
 import bodyParser from 'body-parser';
 import { serverConfig } from './src/config/server.config';
 import mongoose from 'mongoose';
@@ -13,7 +13,7 @@ import axios from 'axios';
 import { CORSMiddleware } from './src/middleware/CORS.middleware';
 import { SocketIOServer } from './src/socket/v1/socket-io.server';
 import { ResponseBase, ResponseStatus } from './src/shared/response/response.payload';
-
+import { Sequelize } from 'sequelize';
 import { authenticateToken } from './src/middleware/token.middleware';
 import postRoute from './src/api/v1/routes/post.route';
 
@@ -60,6 +60,21 @@ mongoose
   .catch((err) => {
     console.error(err);
   })
+
+
+//Connect to postgre
+// Create a new PostgreSQL client
+const client = new Client(serverConfig.postgre);
+
+// Connect to the PostgreSQL database
+client.connect()
+  .then(() => {
+    console.info('Connected to PostgreSQL database');
+    // Perform database operations here
+  })
+  .catch((error: Error) => {
+    console.error('Error connecting to PostgreSQL database:', error.message);
+  });
 
 // Start server
 const startHTTPServer = () => {

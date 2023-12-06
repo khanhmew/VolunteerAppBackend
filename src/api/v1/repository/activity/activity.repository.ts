@@ -193,7 +193,6 @@ export class ActivityRepository {
         throw new Error('Activity not found');
       }
       const isUserJoined = await this.hasExistJoin(userId, activityId);
-      console.log(`isUserJoined: ${isUserJoined}`)
       return isUserJoined;
     } catch (error) {
       throw error;
