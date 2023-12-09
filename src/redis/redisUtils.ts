@@ -1,11 +1,15 @@
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
+import  {serverConfig}  from '../config/server.config';
 
-export const redisClient = new Redis({
-  port: 12586,
-  host: 'redis-12586.c244.us-east-1-2.ec2.cloud.redislabs.com',
-  password: 'h0StMgZf2IilbJnKH0gmwYkgQuLET8x4',
-  connectTimeout: 10000
-});
+const portNumber: number = parseInt(serverConfig.redis.port || '6379', 10);
+
+const redisOptions: RedisOptions = {
+  port: portNumber,
+  host: serverConfig.redis.host || 'localhost',
+  password: serverConfig.redis.password || undefined,
+  connectTimeout: 10000,
+};
+export const redisClient = new Redis(redisOptions);
 
 export const saveLikeForPost = (postId: string, userId: string) => {
   return redisClient.sadd(`post_likes:${postId}`, userId);

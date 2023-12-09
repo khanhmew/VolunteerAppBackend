@@ -13,6 +13,10 @@ const POSTGRE_USERNAME = process.env.POSTGRE_USERNAME ?? '';
 const POSTGRE_PASSWORD = process.env.POSTGRE_PASSWORD ?? '';
 
 
+const REDIS_PORT = process.env.REDIS_PORT ?? '';
+const REDIS_HOST = process.env.REDIS_HOST ?? '';
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD ?? '';
+
 const MONGODB_URL = `mongodb+srv://
 ${MONGODB_USERNAME}:${MONGODB_PASSWORD}
 @cluster0.imlcljm.mongodb.net/${MONGODB_DATABASE_NAME}`;
@@ -35,6 +39,12 @@ export const serverConfig = {
     host: POSTGRE_HOST, 
     port: 5432, 
     database: POSTGRE_DATABASE_NAME,
+  },
+  redis: {
+    port: REDIS_PORT,
+    host: REDIS_HOST,
+    password: REDIS_PASSWORD,
+    connectTimeout: 10000
   },
   server: {
     port: SERVER_PORT
