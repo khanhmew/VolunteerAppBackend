@@ -39,6 +39,10 @@ export const serverConfig = {
     host: POSTGRE_HOST, 
     port: 5432, 
     database: POSTGRE_DATABASE_NAME,
+    sslmode: 'required',
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
   redis: {
     port: REDIS_PORT,

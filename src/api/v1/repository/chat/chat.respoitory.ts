@@ -15,7 +15,13 @@ const sequelize = new Sequelize({
     port: serverConfig.postgre.port,
     username: serverConfig.postgre.user,
     password: serverConfig.postgre.password,
-    database: serverConfig.postgre.database,});
+    database: serverConfig.postgre.database,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Use only if you encounter certificate issues
+      },
+    },});
 const Group = initGroupModel(sequelize);
 const Member = initMemberModel(sequelize);
 export class ChatRepository {
