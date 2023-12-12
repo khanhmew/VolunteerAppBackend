@@ -228,6 +228,7 @@ export class UserRepository {
                         sex: user.sex,
                         username: user.username,
                         type: 'Organization',
+                        isEnable: user.isEnable
                     };
                 } else if (typeUser?.toLocaleLowerCase() === 'admin') {
                     return {
@@ -240,6 +241,7 @@ export class UserRepository {
                         sex: user.sex,
                         username: user.username,
                         type: 'Admin', // You might want to set a default type for non-organization users
+                        isEnable: user.isEnable
                     };
                 }
                 else if (typeUser?.toLocaleLowerCase() === 'super admin') {
@@ -253,6 +255,7 @@ export class UserRepository {
                         sex: user.sex,
                         username: user.username,
                         type: 'Super Admin', // You might want to set a default type for non-organization users
+                        isEnable: user.isEnable
                     };
                 }
                 else {
@@ -266,6 +269,7 @@ export class UserRepository {
                         sex: user.sex,
                         username: user.username,
                         type: 'User', // You might want to set a default type for non-organization users
+                        isEnable: user.isEnable
                     };
                 }
             }));
