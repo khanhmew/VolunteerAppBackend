@@ -11,5 +11,6 @@ export interface OrgDTO {
     imageAuthenticate: any;
     isActiveOrganization: boolean;
     isFollow?: boolean;
-    follower?: number
+    follower?: number;
+    isEnable : boolean
 }

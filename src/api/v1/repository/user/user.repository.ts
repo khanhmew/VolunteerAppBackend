@@ -3,9 +3,16 @@ import User, { IUser } from './user.entity';
 import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, WrongPasswordError } from '../../../../shared/error/auth.error';
 import { uploadImageFromFormData } from '../../services/firebase.service';
 import { OrgActiveBefore } from '../../../../shared/error/auth.error';
+import { PermissionRepository } from '../auth/permission.repository';
+import { UserDTO } from '../../DTO/user.dto'
+import { OrgDTO } from '../../DTO/org.dto';
 const bcrypt = require('bcrypt');
 
 export class UserRepository {
+    private readonly permissionRepository!: PermissionRepository;
+    constructor() {
+        this.permissionRepository = new PermissionRepository();
+    }
     saveUser = async (_user: IUser) => {
         // const hashedPassword = await bcrypt.hash(_user.password, 10);
 
@@ -23,18 +30,18 @@ export class UserRepository {
 
     async getUserType(userId: string): Promise<string | null> {
         try {
-          const user = await User.findById(userId);
-          if (user) {
-            return user.type === 'Organization' ? user.type : null;
-          } else {
-            return null; 
-          }
+            const user = await User.findById(userId);
+            if (user) {
+                return user.type === 'Organization' ? user.type : null;
+            } else {
+                return null;
+            }
         } catch (error) {
-          console.error('Error getting user type:', error);
-          return null;
+            console.error('Error getting user type:', error);
+            return null;
         }
-      }
-      
+    }
+
 
     checkUserExist = async (_userId: any) => {
         const result = await User.exists({ _id: _userId });
@@ -185,29 +192,153 @@ export class UserRepository {
         }
     }
 
-    activeOrg = async (_adminId: String, _orgId: String) => {
-        const orgForActive: any = await this.getExistOrgById(_orgId);
-        const userForCheckAdmin: any = await this.getExistOrgById(_adminId);
-        if (!orgForActive) {
-            throw new AccountNotFoundError('Organization not found');
-        }
-        if (orgForActive.type == 'Organization') {
-            if (userForCheckAdmin.type == 'Admin') {
-                if (orgForActive.isActiveOrganization) {
-                    throw new OrgActiveBefore('OrgActiveBefore');
-                }
-                else {
-                    orgForActive.isActiveOrganization = true;
-                    const activeOrg = await orgForActive.save();
-                    return activeOrg;
-                }
-            }
-            else {
-                throw new AccountTypeNotAdmin('AccountTypeNotAdmin');
-            }
-
-        } else {
-            throw new AccountTypeNotOrg('AccountTypeNotOrg');
+    activeOrg = async (_orgId: String) => {
+        try {
+            const orgForUpdate = await User.findOneAndUpdate({ _id: _orgId },
+                { $set: { isActiveOrganization: true } },
+                { new: true });
+            return { success: 'ban success', org: orgForUpdate }
+        } catch (error) {
+            return { error: error }
         }
     }
+
+
+    //#region ADMIN
+    getAllUsers = async (page: any, limit: any) => {
+        try {
+            const skip = (page - 1) * limit;
+
+            const users = await User.find()
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            const usersResult: UserDTO[] = await Promise.all(users.map(async (user) => {
+                const typeUser = await this.permissionRepository.getTitleRole(user.roleId);
+
+                if (typeUser?.toLocaleLowerCase() === 'organization') {
+                    return {
+                        _id: user._id,
+                        address: user.address,
+                        email: user.email,
+                        avatar: user.avatar,
+                        fullname: user.fullname,
+                        phone: user.phone,
+                        sex: user.sex,
+                        username: user.username,
+                        type: 'Organization',
+                    };
+                } else if (typeUser?.toLocaleLowerCase() === 'admin') {
+                    return {
+                        _id: user._id,
+                        address: user.address,
+                        email: user.email,
+                        avatar: user.avatar,
+                        fullname: user.fullname,
+                        phone: user.phone,
+                        sex: user.sex,
+                        username: user.username,
+                        type: 'Admin', // You might want to set a default type for non-organization users
+                    };
+                }
+                else if (typeUser?.toLocaleLowerCase() === 'super admin') {
+                    return {
+                        _id: user._id,
+                        address: user.address,
+                        email: user.email,
+                        avatar: user.avatar,
+                        fullname: user.fullname,
+                        phone: user.phone,
+                        sex: user.sex,
+                        username: user.username,
+                        type: 'Super Admin', // You might want to set a default type for non-organization users
+                    };
+                }
+                else {
+                    return {
+                        _id: user._id,
+                        address: user.address,
+                        email: user.email,
+                        avatar: user.avatar,
+                        fullname: user.fullname,
+                        phone: user.phone,
+                        sex: user.sex,
+                        username: user.username,
+                        type: 'User', // You might want to set a default type for non-organization users
+                    };
+                }
+            }));
+
+            return usersResult;
+        } catch (error) {
+            console.error('Error getting all users:', error);
+            throw error;
+        }
+    };
+
+
+
+    //ban user 
+    banUser = async (userIdForBan: String) => {
+        try {
+            const userForUpdate = await User.findOneAndUpdate({ _id: userIdForBan },
+                { $set: { isEnable: false } },
+                { new: true });
+            return { success: 'ban success', user: userForUpdate }
+        } catch (error) {
+            return { error: error }
+        }
+    }
+
+
+    //get all org send authentication 
+    getAllOrgAuthen = async (page: any, limit: any) => {
+        try {
+            const skip = (page - 1) * limit;
+
+            const allOrgs = await User.find({
+                isActiveOrganization: false,
+                isEnable: true,
+                roleId: '656c9bda38d3d6f36ecc8eb6',
+                imageAuthenticate: { $exists: true, $not: { $size: 0 } } // Check if the imageAuthenticate array is not empty
+            })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            return { success: 'get success', orgs: allOrgs };
+        } catch (error) {
+            console.error('Error getting authenticated organizations:', error);
+            return { error: error };
+        }
+    };
+
+    getDetailOrg = async (orgId: any) => {
+        try {
+            const orgFind: any = await User.findById({ _id: orgId });
+            if (orgFind) {
+                const orgDetail: OrgDTO = {
+                    _id: orgId,
+                    address: orgFind.address,
+                    avatar: orgFind.avatar,
+                    email: orgFind.email,
+                    fullname: orgFind.fullname,
+                    imageAuthenticate: orgFind.imageAuthenticate,
+                    isActiveOrganization: orgFind.isActiveOrganization,
+                    isEnable: orgFind.isEnable,
+                    phone: orgFind.phone,
+                    sex: orgFind.sex,
+                    type: 'Organization',
+                    username: orgFind.username,
+                }
+                return { success: 'get success', org: orgDetail };
+            }
+            return { eror: 'get fail' }
+        } catch (error) {
+            return { eror: error }
+        }
+    }
+
+    //#endregion ADMIN
 }

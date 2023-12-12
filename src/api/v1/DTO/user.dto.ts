@@ -1,4 +1,4 @@
-export interface OrgDTO {
+export interface UserDTO {
     _id: string;
     type: string;
     fullname: string;
@@ -8,8 +8,4 @@ export interface OrgDTO {
     phone: string;
     address: any;
     sex: any;
-    imageAuthenticate: any;
-    isActiveOrganization: boolean;
-    isFollow: boolean;
-    follower: number
 }

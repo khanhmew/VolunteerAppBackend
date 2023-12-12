@@ -12,5 +12,6 @@ export interface UserAdmin {
     isActiveOrganization?: boolean;
     isFollow?: boolean;
     follower?: number;
-    groupPermission?: any
+    groupPermission?: any;
+    isEnable: boolean
 }

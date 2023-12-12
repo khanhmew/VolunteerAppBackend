@@ -20,7 +20,7 @@ export class AuthRepository {
 
   async authenticateAdmin(_username: String, _password: String) {
     try {
-      const user = await User.findOne({ username: _username }).exec();;
+      const user = await User.findOne({ username: _username }).exec();
 
       if (!user) {
         throw new AccountNotFoundError('Account does not exist');
@@ -53,7 +53,8 @@ export class AuthRepository {
             imageAuthenticate: user.imageAuthenticate,
             isActiveOrganization: user.isActiveOrganization,
             follower: totalFollow,
-            groupPermission: userRole
+            groupPermission: userRole,
+            isEnable: user.isEnable
           };
           return { orgResult, accessToken, refreshToken };
         }
@@ -68,7 +69,8 @@ export class AuthRepository {
             phone: user.phone,
             address: user.address,
             sex: user.sex,
-            groupPermission: userRole
+            groupPermission: userRole,
+            isEnable: user.isEnable
           }
           return { adminResult, accessToken, refreshToken };
         }
@@ -83,7 +85,8 @@ export class AuthRepository {
             phone: user.phone,
             address: user.address,
             sex: user.sex,
-            groupPermission: userRole
+            groupPermission: userRole,
+            isEnable: user.isEnable
           }
           return { superAdResult, accessToken, refreshToken };
         }
@@ -130,6 +133,7 @@ export class AuthRepository {
             imageAuthenticate: user.imageAuthenticate,
             isActiveOrganization: user.isActiveOrganization,
             follower: totalFollow,
+            isEnable: user.isEnable
           };
           return { orgResult, accessToken, refreshToken };
         }
@@ -144,6 +148,7 @@ export class AuthRepository {
             phone: user.phone,
             address: user.address,
             sex: user.sex,
+            isEnable: user.isEnable
           }
           return { userResult, accessToken, refreshToken };
         }
@@ -182,7 +187,8 @@ export class AuthRepository {
       sex: _user.sex,
       imageAuthenticate: [],
       isActiveOrganization: false,
-      roleId: _user.roleId
+      roleId: _user.roleId,
+      isEnable: true
     });
     return userToStore.save();
   }

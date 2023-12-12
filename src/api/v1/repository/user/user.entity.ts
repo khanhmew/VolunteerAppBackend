@@ -13,7 +13,8 @@ export interface IUser {
     imageAuthenticate: Array<String>;
     address: String;
     sex: String;
-    roleId: string
+    roleId: string;
+    isEnable: boolean
 }
 
 export interface IUserModel extends IUser, Document { }
@@ -33,6 +34,7 @@ const IUserSchema: Schema = new Schema(
         address: {type: String, required: false},
         sex: {type: String, required: false},
         roleId: {type: String, required: false},
+        isEnable: {type: Boolean, required: true},
     },
     {
         versionKey: false

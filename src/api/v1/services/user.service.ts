@@ -86,9 +86,9 @@ export class UserService {
     }
   }
 
-  async activeOrganization(_adminId: String, _orgId: String) {
+  async activeOrganization(_orgId: String) {
     try {
-      const activeResult = await this.userRepository.activeOrg(_adminId, _orgId);
+      const activeResult = await this.userRepository.activeOrg(_orgId);
       return activeResult;
     } catch (error: any) {
       if (error instanceof AccountNotFoundError) {
@@ -113,4 +113,44 @@ export class UserService {
       return error;
     }
   }
+
+  async getAllUsers(page: any, limit: any) {
+    try {
+      const allUsers: any = await this.userRepository.getAllUsers(page, limit);
+      return allUsers;
+    } catch (error) {
+      console.log('Error when getting all Users:', error);
+      throw error;
+    }
+  }
+
+  async banUsers(userIdForBan: any) {
+    try {
+      const userResult: any = await this.userRepository.banUser(userIdForBan);
+      return userResult;
+    } catch (error) {
+      console.log('Error when getting all Users:', error);
+      throw error;
+    }
+  }
+
+  async getAllOrgAuthen(page: any, limit: any) {
+    try {
+      const allOrgs: any = await this.userRepository.getAllOrgAuthen(page, limit);
+      return allOrgs;
+    } catch (error) {
+      console.log('Error when getting all Users:', error);
+      throw error;
+    }
+  }
+  async getDetailOrg(orgId: any) {
+    try {
+      const org: any = await this.userRepository.getDetailOrg(orgId);
+      return org;
+    } catch (error) {
+      console.log('Error when getting all Users:', error);
+      throw error;
+    }
+  }
+
 }

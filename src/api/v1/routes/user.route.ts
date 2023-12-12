@@ -14,11 +14,18 @@ const upload = multer({
 });
 
 //userRoute.post('/user', authenticateToken, userControllerInstance.saveUserCallback);
-userRoute.get('/user',authenticateToken, userControllerInstance.getAll);
 userRoute.put('/user', authenticateToken, upload.single('avatar'), userControllerInstance.updateUserProfile);
 userRoute.put('/org/verify', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
-userRoute.put('/org/active', authenticateToken, userControllerInstance.activeOrganiztion)
 
+
+
+//#region Admin 
+userRoute.get('/users',authenticateToken, userControllerInstance.getAllUsers);
+userRoute.put('/user/ban/:userid',authenticateToken, userControllerInstance.banUser);
+userRoute.put('/org/active/:orgid', authenticateToken, userControllerInstance.activeOrganiztion)
+userRoute.get('/org/authen', authenticateToken, userControllerInstance.getAllOrgSendVerify)
+userRoute.get('/org/:orgid', authenticateToken, userControllerInstance.getDetailOrg)
+//#endregion Admin 
 
 //#region Follow
 userRoute.post('/user/follow', authenticateToken,userControllerInstance.followUser);

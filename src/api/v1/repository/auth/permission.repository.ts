@@ -1,7 +1,7 @@
 import Permission from './permission.entity';
 import RolePermission from './rolePermission.entity';
 import Role from './role.entity';
-
+import User, { IUser } from '../user/user.entity';
 
 export class PermissionRepository {
     async getPermissionARole(_roleID: any) {
@@ -34,4 +34,27 @@ export class PermissionRepository {
         const roleForGet =await Role.findOne({title: _roleName});
         return roleForGet;
     }
+
+    async hasPermission(userId: any, permissionName: string): Promise<boolean> {
+        try {
+            const user = await User.findOne({ _id: userId }).exec();
+            // Find the role's permissions
+            const rolePermissions = await RolePermission.find({ roleId: user?.roleId}).exec();
+    
+            // Check if the desired permission exists for the role
+            const hasPermission = await Promise.all(
+                rolePermissions.map(async (rolePermission) => {
+                    const permission = await Permission.findById(rolePermission.permissionId).exec();
+                    return permission?.title === permissionName;
+                })
+            );
+    
+            // Return true if the role has the permission, otherwise false
+            return hasPermission.some((permission) => permission);
+        } catch (error) {
+            console.error('Error checking role permission:', error);
+            throw error;
+        }
+    }
+    
 }
