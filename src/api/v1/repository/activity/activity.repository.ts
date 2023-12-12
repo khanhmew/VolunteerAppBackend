@@ -230,7 +230,7 @@ export class ActivityRepository {
         userId: _userId,
         activityId: _activityId
       });
-      if(joinExist)
+      if(joinExist?.isAttended)
         return true;
       return false;
     } catch (error) {

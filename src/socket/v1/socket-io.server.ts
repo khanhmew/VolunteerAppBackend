@@ -44,7 +44,7 @@ export class SocketIOServer {
       }
 
         const accessToken = socket.handshake?.auth?.token._j;
-        // console.log(`accesstoken: ${JSON.stringify(accessToken)}`)
+        console.log(`accesstoken: ${JSON.stringify(accessToken)}`)
         if (!accessToken) {
           // console.error('accessToken should not be empty');
           io.to(socket.id).emit(IOChanel.ERROR_CHANEL, {
@@ -57,7 +57,7 @@ export class SocketIOServer {
         jwt.verify(accessToken, SECRETKEY, (err: any, user: any) => {
           if (err) io.to(socket.id).emit(IOChanel.ERROR_CHANEL, new Error('Invalid token!'));
           userCreateConnection = user;
-          // console.log(`user join socket: ${JSON.stringify(user)}`);
+          console.log(`user join socket: ${JSON.stringify(user)}`);
           // socket.emit(IOChanel.JOIN_ROOM, {
           //   metadata: userCreateConnection,
           // });
