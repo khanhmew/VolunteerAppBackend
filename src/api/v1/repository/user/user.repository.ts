@@ -210,10 +210,9 @@ export class UserRepository {
             const skip = (page - 1) * limit;
 
             const users = await User.find()
-                .sort({ createdAt: -1 })
+                .sort({ initTime: -1 })
                 .skip(skip)
                 .limit(limit);
-
             const usersResult: UserDTO[] = await Promise.all(users.map(async (user) => {
                 const typeUser = await this.permissionRepository.getTitleRole(user.roleId);
 
@@ -307,7 +306,7 @@ export class UserRepository {
                 roleId: '656c9bda38d3d6f36ecc8eb6',
                 imageAuthenticate: { $exists: true, $not: { $size: 0 } } // Check if the imageAuthenticate array is not empty
             })
-                .sort({ createdAt: -1 })
+                .sort({ initTime: -1 })
                 .skip(skip)
                 .limit(limit);
 
