@@ -155,6 +155,10 @@ export class UserRepository {
                 };
                 if (updatedUser?.roleId == '656c9bda38d3d6f36ecc8eb6') {
                     userResultForUpdate.isActive = updatedUser?.isActiveOrganization;
+                    userResultForUpdate.type = 'Organization'
+                }
+                else{
+                    userResultForUpdate.type = 'User'
                 }
                 return { userResultForUpdate };
             } catch (error) {
