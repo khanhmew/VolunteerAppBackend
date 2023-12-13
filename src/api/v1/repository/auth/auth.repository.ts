@@ -232,7 +232,8 @@ export class AuthRepository {
         sex: user.sex,
       };
 
-      if (user.type.toLowerCase() === 'organization') {
+      if (user.roleId == '656c9bda38d3d6f36ecc8eb6') {
+        profile.type = 'Organization';
         profile.isActiveOrganization = user.isActiveOrganization;
         profile.imageAuthenticate = user.imageAuthenticate;
         const followers = await this.followRepository.countFollowersOfOrg(user._id);

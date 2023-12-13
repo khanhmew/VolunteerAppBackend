@@ -2,7 +2,8 @@ import { Op } from 'sequelize';
 import { UserRepository } from '../user/user.repository';
 import { ActivityRepository } from '../activity/activity.repository';
 import { initGroupModel } from './grouppg.entity'; // Thay đổi đường dẫn đến file của bạn
-import { initMemberModel} from './memberpg.entity';
+import { initMemberModel } from './memberpg.entity';
+import { initMessageModel } from './message.entity';
 import User from '../user/user.entity';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 import { serverConfig } from '../../../../config/server.config';
@@ -10,20 +11,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 const sequelize = new Sequelize({
-    dialect: 'postgres', // Specify your database dialect
-    host: serverConfig.postgre.host,
-    port: serverConfig.postgre.port,
-    username: serverConfig.postgre.user,
-    password: serverConfig.postgre.password,
-    database: serverConfig.postgre.database,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false, // Use only if you encounter certificate issues
-      },
-    },});
+  dialect: 'postgres', // Specify your database dialect
+  host: serverConfig.postgre.host,
+  port: serverConfig.postgre.port,
+  username: serverConfig.postgre.user,
+  password: serverConfig.postgre.password,
+  database: serverConfig.postgre.database,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // Use only if you encounter certificate issues
+    },
+  },
+});
 const Group = initGroupModel(sequelize);
 const Member = initMemberModel(sequelize);
+const Message = initMessageModel(sequelize)
 export class ChatRepository {
   private readonly userRepository!: UserRepository;
   private readonly activityRepository!: ActivityRepository;
@@ -71,10 +74,10 @@ export class ChatRepository {
 
   isJoinedGroup = async (userId: any, groupId: any) => {
     try {
-    //   const user = await User.findByPk(userId);
-    //   if (!user) {
-    //     return { error: 'User not found' };
-    //   }
+      //   const user = await User.findByPk(userId);
+      //   if (!user) {
+      //     return { error: 'User not found' };
+      //   }
 
       const group = await Group.findByPk(groupId);
       if (!group) {
@@ -91,26 +94,26 @@ export class ChatRepository {
   createGroup = async (_group: any) => {
     try {
       const { createdBy, activityId, name, avatar } = _group;
-  
+
       // Check if the activityId exists
       const isValidActivityId = await this.activityRepository.isValidActivityId(activityId);
       if (!isValidActivityId) {
         return { error: 'Invalid activityId' };
       }
-  
+
       const checkInvalidGroup = await this.isValidGroupId(activityId);
       if (checkInvalidGroup) {
         return { error: 'Group already exists' };
       }
-  
+
       // Check the type of the user
       const userType = await this.userRepository.getUserType(createdBy);
       if (userType !== 'Organization') {
         return { error: 'User must be of type Organization to create a group' };
       }
-  
+
       const groupId = uuidv4(); // Generate a unique groupId
-  
+
       const newGroup = await Group.create({
         createdby: createdBy,
         activityid: activityId,
@@ -121,7 +124,7 @@ export class ChatRepository {
         isdelete: false,
         groupid: groupId,
       });
-  
+
       return { success: 'Create success', group: newGroup };
     } catch (error: any) {
       return { error: error.message || 'An error occurred while creating the group' };
@@ -149,6 +152,30 @@ export class ChatRepository {
       });
 
       return { success: 'Join group success', member: newMember };
+    } catch (error) {
+      return { error: error };
+    }
+  };
+
+  sendMessage = async (userId: any, groupId: any, messageText: any, userImage: any) => {
+    try {
+      // const groupForJoin: any = await Group.findByPk(groupId);
+      // if (!groupForJoin) {
+      //   console.log('Group chat is not created')
+      //   return { error: 'Group chat is not created' }
+      // }
+      const messageid = uuidv4();
+      const newMessage = await Message.create({
+        userid: userId,
+        groupid: groupId,
+        messageid: messageid,
+        sendAt: new Date(),
+        isRead: false,
+        userImage: userImage,
+        content: messageText
+      });
+
+      return { success: 'send mess to group success', message: newMessage };
     } catch (error) {
       return { error: error };
     }

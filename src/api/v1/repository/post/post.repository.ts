@@ -61,7 +61,7 @@ export class PostRepository {
         const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
         const userResultType: any = await this.userRepository.getExistOrgById(_post.ownerId);
         const orgInformationCreatePost: any = await this.userRepository.getExistOrgById(_post.ownerId);
-        if (userResultType.type == 'Organization') {
+        if (userResultType.roleId == '656c9bda38d3d6f36ecc8eb6') {
             if (userResultType.isActiveOrganization) {
                 const postSave: any = new Post({
                     _id: new mongoose.Types.ObjectId(),

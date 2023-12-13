@@ -101,9 +101,11 @@ export class PostController {
       } 
       const posts: any = await this.postServiceInstance.getAllPostUserFollow(page, limit, userIdForCheckJoin);
       if(posts.postsInformation.length < 1){
+        console.log('Out of post')
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
       if(posts.error){
+        console.log(posts.error)
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, posts.error, null));
       }
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));

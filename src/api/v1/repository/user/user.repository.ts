@@ -79,7 +79,7 @@ export class UserRepository {
         try {
             const user = await User.findOne({
                 _id: _idUser
-            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email', 'address', 'username', 'isActiveOrganization', 'imageAuthenticate']);
+            }).select(['_id', 'type', 'phone', 'fullname', 'password', 'avatar', 'email', 'address', 'username', 'isActiveOrganization', 'imageAuthenticate', 'roleId']);
             return user;
         } catch (error) {
             console.error('Error getting org by ID:', error);
@@ -153,7 +153,7 @@ export class UserRepository {
                     address: updatedUser?.address,
 
                 };
-                if (updatedUser?.type.toLowerCase() == 'organization') {
+                if (updatedUser?.roleId == '656c9bda38d3d6f36ecc8eb6') {
                     userResultForUpdate.isActive = updatedUser?.isActiveOrganization;
                 }
                 return { userResultForUpdate };
