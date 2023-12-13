@@ -69,10 +69,14 @@ export class SocketIOServer {
           metadata: userCreateConnection,
         });
       });
-
+      socket.on("join_room", (data) => {
+        socket.join(data);
+        console.log(`User with ID: ${socket.id} joined room: ${data}`);
+      });
       socket.on("send_message", async (message: any)=>{
         console.log(`send_message: ${JSON.stringify(message)}`)
-        await this.chatRepository.sendMessage(message.userId, "5894c675-3e5a-4d25-83d2-eb8eb76946ff",message.message, message.avatar)
+        socket.to(roomId).emit("receive_message", message);
+        await this.chatRepository.sendMessage(message.userId, roomId,message.message, message.avatar)
       })
 
     });

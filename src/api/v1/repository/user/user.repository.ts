@@ -32,7 +32,7 @@ export class UserRepository {
         try {
             const user = await User.findById(userId);
             if (user) {
-                return user.type === 'Organization' ? user.type : null;
+                return user.roleId == '656c9bda38d3d6f36ecc8eb6' ? user.roleId : null;
             } else {
                 return null;
             }

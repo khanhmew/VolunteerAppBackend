@@ -67,4 +67,19 @@ export class ChatController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+    getAllGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userForGet = req.user.userId;
+            const groupResult: any = await this.chatServiceInstance.getAllGroupUserJoined(userForGet);
+            console.log(`Response join group ${JSON.stringify(groupResult)}`)
+            if (groupResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, groupResult.success, groupResult.group));
+            }
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, groupResult.error, null));
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }

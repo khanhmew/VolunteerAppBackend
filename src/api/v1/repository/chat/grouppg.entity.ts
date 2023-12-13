@@ -1,4 +1,5 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
+import { initMemberModel } from './memberpg.entity';
 
 interface IGroup {
   groupid: string,
@@ -23,7 +24,7 @@ const initGroupModel = (sequelize: Sequelize) => {
         defaultValue: Sequelize.literal('gen_random_uuid()'),
       },
       activityid: {
-        type: DataTypes.STRING, // Phù hợp với UUID trong PostgreSQL
+        type: DataTypes.STRING,
         allowNull: false,
       },
       name: {
@@ -39,7 +40,7 @@ const initGroupModel = (sequelize: Sequelize) => {
         defaultValue: 0,
       },
       createdby: {
-        type: DataTypes.STRING, // Phù hợp với UUID trong PostgreSQL
+        type: DataTypes.STRING,
         allowNull: false,
       },
       createdat: {
@@ -53,10 +54,15 @@ const initGroupModel = (sequelize: Sequelize) => {
     },
     {
       sequelize,
-      modelName: 'Group',
-      timestamps: false, // PostgreSQL tự quản lý timestamps
+      modelName: 'group',
+      timestamps: false,
     }
   );
+
+  const Member = initMemberModel(sequelize);
+
+  // Define the association between Group and Member
+  Group.hasMany(Member, { foreignKey: 'groupid' });
 
   return Group;
 };

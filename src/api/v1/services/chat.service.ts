@@ -32,6 +32,16 @@ export class ChatService {
     }
   }
 
+  getAllGroupUserJoined = async(_userId: any) => {
+    try{
+        const group: any = await this.chatRepository.getAllJoinedGroups(_userId);
+        return group;
+    }
+    catch(error){
+        console.log(error);
+    }
+  }
+
   createGroup = async(_group: any) => {
     try{
         const joinResult = await this.chatRepository.createGroup(_group);

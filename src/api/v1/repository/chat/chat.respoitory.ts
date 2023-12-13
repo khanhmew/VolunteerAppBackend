@@ -5,7 +5,7 @@ import { initGroupModel } from './grouppg.entity'; // Thay đổi đường dẫ
 import { initMemberModel } from './memberpg.entity';
 import { initMessageModel } from './message.entity';
 import User from '../user/user.entity';
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize, DataTypes, Model, QueryTypes } from 'sequelize';
 import { serverConfig } from '../../../../config/server.config';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -108,7 +108,7 @@ export class ChatRepository {
 
       // Check the type of the user
       const userType = await this.userRepository.getUserType(createdBy);
-      if (userType !== 'Organization') {
+      if (userType != "656c9bda38d3d6f36ecc8eb6") {
         return { error: 'User must be of type Organization to create a group' };
       }
 
@@ -123,6 +123,15 @@ export class ChatRepository {
         createdat: new Date(),
         isdelete: false,
         groupid: groupId,
+      });
+
+      //join owner
+      const memberId = uuidv4();
+      await Member.create({
+        userid: createdBy,
+        groupid: groupId,
+        memberid: memberId,
+        joinedat: new Date(),
       });
 
       return { success: 'Create success', group: newGroup };
@@ -180,4 +189,26 @@ export class ChatRepository {
       return { error: error };
     }
   };
+
+  //get all group that user join 
+  getAllJoinedGroups = async (userId: any) => {
+    try {
+      const joinedGroupsQuery = `
+        SELECT Groups.groupid, Groups.name, Groups.avatar
+        FROM Members
+        INNER JOIN Groups ON Members.groupid = Groups.groupid
+        WHERE Members.userid = :userId
+      `;
+  
+      const joinedGroups = await sequelize.query(joinedGroupsQuery, {
+        replacements: { userId: userId },
+        type: QueryTypes.SELECT as any, // Use QueryTypes from sequelize instance
+      });
+  
+      return { success: 'Get joined groups success', group: joinedGroups };
+    } catch (error: any) {
+      return { error: error.message || 'An error occurred while getting joined groups' };
+    }
+  };
+  
 }

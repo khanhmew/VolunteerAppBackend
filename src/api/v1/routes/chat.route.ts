@@ -15,5 +15,6 @@ const upload = multer({
 
 chatRoute.post('/group', authenticateToken, upload.single('avatar'), chatControllerInstance.createGroup);
 chatRoute.post('/group/member/:groupId', authenticateToken, chatControllerInstance.joinGroup);
+chatRoute.get('/groups/join', authenticateToken, chatControllerInstance.getAllGroupUserJoin);
 
 export default chatRoute;

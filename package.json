@@ -56,6 +56,7 @@
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "pg-promise": "^11.5.4",
+    "pg-protocol": "^1.6.0",
     "qrcode": "^1.5.3",
     "qrcode-svg": "^1.1.0",
     "redis": "^4.6.10",
