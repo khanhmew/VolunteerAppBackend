@@ -32,7 +32,7 @@ export class ActivityRepository {
   async isValidActivityId(activityId: string): Promise<boolean> {
     try {
       const activity = await Activity.findById(activityId);
-      return !!activity; 
+      return !!activity;
     } catch (error) {
       console.error('Error checking activityId validity:', error);
       return false;
@@ -99,11 +99,11 @@ export class ActivityRepository {
   findActIdBasePost = async (_postId: any) => {
     try {
       const activity = await Activity.findOne({ postId: _postId });
-  
+
       if (!activity) {
         return { error: 'Activity not found' };
       }
-  
+
       return activity._id;
     } catch (error) {
       console.error('Error:', error);
@@ -203,14 +203,14 @@ export class ActivityRepository {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        return {error: 'User not found' }
+        return { error: 'User not found' }
       }
       const activity = await Activity.findById(activityId);
       if (!activity) {
-        return {error: 'Activity not found' }
+        return { error: 'Activity not found' }
       }
       const isUserJoined = await this.hasExistJoin(userId, activityId);
-      return {success: '', join: isUserJoined};
+      return { success: '', join: isUserJoined };
     } catch (error) {
       throw error;
     }
@@ -230,7 +230,7 @@ export class ActivityRepository {
         userId: _userId,
         activityId: _activityId
       });
-      if(joinExist?.isAttended)
+      if (joinExist?.isAttended)
         return true;
       return false;
     } catch (error) {
@@ -304,6 +304,46 @@ export class ActivityRepository {
       return detailedActivities;
     } catch (error) {
       console.error('Error getting details of joined activities:', error);
+    }
+  }
+
+  getAllUserJoinAct = async (_activityId: any) => {
+    try {
+      const allJoins = Join.find({ activityId: _activityId });
+      const allUsers = await Promise.all(
+        (await allJoins).map(async (join) => {
+          const user = await User.findOne({ _id: join.userId });
+          const userResult = ({
+            _id: join.userId,
+            username: user?.username,
+            avatar: user?.avatar
+          })
+          return userResult;
+        })
+      );
+      return { success: 'Get success', users: allUsers }
+    } catch (error) {
+      return { error: error }
+    }
+  }
+
+  getAllUserAttendanceAct = async (_activityId: any) => {
+    try {
+      const allJoins = Join.find({ activityId: _activityId , isAttended: true});
+      const allUsers = await Promise.all(
+        (await allJoins).map(async (join) => {
+          const user = await User.findOne({ _id: join.userId });
+          const userResult = ({
+            _id: join.userId,
+            username: user?.username,
+            avatar: user?.avatar
+          })
+          return userResult;
+        })
+      );
+      return { success: 'Get success', users: allUsers }
+    } catch (error) {
+      return { error: error }
     }
   }
 }

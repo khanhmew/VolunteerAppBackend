@@ -80,4 +80,37 @@ export class ActivityController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+
+    getAllUserJoinAct =  async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const activityId = req.params.activityid;
+            const allUsers: any=await this.activityServiceInstance.getAlluserJoin(activityId);
+            if (allUsers.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', allUsers.users));
+            }
+            else{
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, allUsers.error, null));
+            }
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
+
+    getAllUserAttendanceAct =  async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const activityId = req.params.activityid;
+            const allUsers: any=await this.activityServiceInstance.getAlluserAttendance(activityId);
+            if (allUsers.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', allUsers.users));
+            }
+            else{
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, allUsers.error, null));
+            }
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }

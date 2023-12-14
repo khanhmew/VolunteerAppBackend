@@ -58,4 +58,22 @@ export class ActivityService {
       return ({error: error})
     }
   }
+
+  getAlluserJoin = async(_activityId: any)=>{
+    try {
+      const allUsers = await this.activityRepository.getAllUserJoinAct(_activityId);
+      return allUsers;
+    } catch (error) {
+      return ({error: error})
+    }
+  }
+
+  getAlluserAttendance = async(_activityId: any)=>{
+    try {
+      const allUsers = await this.activityRepository.getAllUserAttendanceAct(_activityId);
+      return allUsers;
+    } catch (error) {
+      return ({error: error})
+    }
+  }
 }

@@ -9,6 +9,8 @@ activityRoute.put('/activity/:activityId', authenticateToken,activityControllerI
 activityRoute.get('/activity/join', authenticateToken,activityControllerInstance.getDetailsOfJoinedActivities)
 activityRoute.get('/activity/create', authenticateToken,activityControllerInstance.getDetailsOfCreatedActivities)
 activityRoute.post('/activity/attendance/:postId', authenticateToken,activityControllerInstance.attendance)
+activityRoute.get('/activity/join/:activityid', authenticateToken,activityControllerInstance.getAllUserJoinAct)
+activityRoute.get('/activity/attendance/:activityid', authenticateToken,activityControllerInstance.getAllUserAttendanceAct)
 //#endregion
 
 
