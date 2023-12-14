@@ -342,11 +342,11 @@ export class PostRepository {
                 postDetail.likes = likes;
                 postDetail.totalLikes = likes.length;
                 const userForCheckType = await this.userRepository.getExistOrgById(_userId);
-                if (userForCheckType?.type.toLocaleLowerCase() == 'user' && isJoin == true) {
+                if (userForCheckType?.roleId == '656d7f368f44963447c3ecf7' && isJoin == true) {
                     const isAttendedCheck = await this.activityRepository.isAttended(_userId, post.activityId);
                     postDetail.isAttended = isAttendedCheck
                 }
-                else if (userForCheckType?.type.toLocaleLowerCase() == 'organization' && orgInformationPost._id == _userId) {
+                else if (userForCheckType?.roleId == '656c9bda38d3d6f36ecc8eb6' && orgInformationPost._id == _userId) {
                     postDetail.qrcode = activityResult.qrCode;
                     postDetail.isEnableQr = activityResult.isEnableQr;
                 }
@@ -478,9 +478,9 @@ export class PostRepository {
             const checkPostExist = Post.findById(_postId);
             if (!checkPostExist)
                 return ({ error: 'Post does not exist' })
-            const checkUserType = await User.findById(_userId);
-            if (checkUserType?.type && checkUserType.type.trim().toLocaleLowerCase() === 'USER')
-                return ({ error: 'Type must be user' })
+            // const checkUserType = await User.findById(_userId);
+            // if (checkUserType?.type && checkUserType.type.trim().toLocaleLowerCase() === 'USER')
+            //     return ({ error: 'Type must be user' })
             const activityIdForJoin = await this.activityRepository.findActIdBasePost(_postId);
             const join = await Join.findOne({ activityId: activityIdForJoin, userId: _userId });
             await Join.updateOne({ _id: join?._id }, { $set: { isAttended: true, timeAttended: new Date() } });

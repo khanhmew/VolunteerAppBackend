@@ -136,7 +136,7 @@ export class ActivityRepository {
     const checkCanJoin = await this.checkMaxParticipants(activityId);
     if (checkCanJoin.success) {
       const user = await User.findById(userId);
-      if (user?.type.toLocaleLowerCase() == 'organization') {
+      if (user?.roleId == '656c9bda38d3d6f36ecc8eb6') {
         return { error: 'Organization can not join activity' };
       }
       const activity = await Activity.findById(activityId);
