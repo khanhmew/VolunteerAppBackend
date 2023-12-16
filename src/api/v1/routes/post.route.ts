@@ -38,6 +38,8 @@ postRoute.put('/post/unlike', authenticateToken,postRedisControllerInstance.unli
 postRoute.get('/post/like/:postId', authenticateToken,postRedisControllerInstance.checkUserLikePost);
 //#endregion
 
+//get 10 user create most post in a month ago
+postRoute.get('/user/productive-activities',postControllerInstance.getAllTopOrgCreatePost);
 
 
 //#region COMMENT

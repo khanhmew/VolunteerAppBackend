@@ -114,6 +114,15 @@ export class UserService {
     }
   }
 
+  async getAllFollow(_orgId: any){
+    try {
+      const orgResult = await this.followRepository.getOrgFollowersAndFollowingCount(_orgId);
+      return orgResult;
+    } catch (error: any) {
+      return error;
+    }
+  }
+
   async getAllUsers(page: any, limit: any) {
     try {
       const allUsers: any = await this.userRepository.getAllUsers(page, limit);

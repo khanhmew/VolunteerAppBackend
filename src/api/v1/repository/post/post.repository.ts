@@ -491,4 +491,47 @@ export class PostRepository {
             return ({ error: error })
         }
     }
+
+
+    //get all user and sort that user create most post in a month ago
+    async getTopUsersByPostCountWithinLastMonth() {
+        try {
+            const currentDate = new Date();
+            const oneMonthAgo = new Date(currentDate);
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
+            const allUsers = await User.find();
+    
+            const usersWithPostCount = [];
+    
+            for (const user of allUsers) {
+                const postCount = await Post.countDocuments({
+                    ownerId: user._id,
+                    updatedAt: { $gte: oneMonthAgo, $lt: currentDate }
+                });
+    
+                if (postCount > 0) {
+                    usersWithPostCount.push({
+                        userId: user._id,
+                        avatar: user.avatar,
+                        fullName: user.fullname,
+                        postCount
+                    });
+                }
+            }
+    
+            usersWithPostCount.sort((a, b) => b.postCount - a.postCount);
+    
+            const topUsers = usersWithPostCount.slice(0, 10);
+    
+            console.log('Danh sách người dùng với số bài viết:', topUsers);
+    
+            return topUsers;
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách người dùng và sắp xếp: ', error);
+            throw error;
+        }
+    }
+    
+    
 }   

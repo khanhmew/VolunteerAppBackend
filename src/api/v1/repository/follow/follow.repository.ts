@@ -61,6 +61,23 @@ export class FollowRepository {
             return { error: 'Failed to unfollow the user' };
         }
     }
+
+    async getFollowersCount(orgId: any) {
+        try {
+            if (!isValidObjectId(orgId)) {
+                return { error: 'Invalid orgId' };
+            }
+    
+            const followersCount = await Follow.countDocuments({ followingId: orgId });
+    
+            return { success: 'Successfully retrieved followers count', followersCount };
+        } catch (error) {
+            console.error('Error getting followers count:', error);
+            return { error: 'Failed to get followers count' };
+        }
+    }
+    
+
     async countFollowersOfOrg(orgId: string) {
         try {
           const followersCount = await Follow.countDocuments({ followingId: orgId });
@@ -106,5 +123,25 @@ export class FollowRepository {
             throw error;
         }
     }
-
+    async getOrgFollowersAndFollowingCount(orgId: any) {
+        try {
+            if (!isValidObjectId(orgId)) {
+                return { error: 'Invalid orgId' };
+            }
+    
+            const followersCount = await Follow.countDocuments({ followingId: orgId });
+            const followingCount = await Follow.countDocuments({ followerId: orgId });
+    
+            return {
+                success: 'Successfully retrieved followers and following count for the org',
+                follow: {
+                    follower: followersCount,
+                    following: followingCount
+                }
+            };
+        } catch (error) {
+            console.error('Error getting org followers and following count:', error);
+            return { error: 'Failed to get org followers and following count' };
+        }
+    }
 }

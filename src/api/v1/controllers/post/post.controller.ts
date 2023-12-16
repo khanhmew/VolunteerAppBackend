@@ -163,6 +163,13 @@ export class PostController {
     }
   }
 
+  getAllTopOrgCreatePost = async (req: Request, res: Response, next: NextFunction) => {
+    const topUsers: any = await this.postServiceInstance.getOrgCreateMostPost();
+    if(topUsers)
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', topUsers))
+    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+  }
+
   //#region COMMENT
   commentAPost = async (req: Request, res: Response, next: NextFunction) => {
     try {

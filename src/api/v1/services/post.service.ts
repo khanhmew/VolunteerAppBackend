@@ -206,4 +206,12 @@ export class PostService {
     }
   }
   
+  async getOrgCreateMostPost(){
+    try {
+      const topUsers = await this.postRepository.getTopUsersByPostCountWithinLastMonth()
+        return topUsers
+    } catch (error) {
+        return error
+    }
+  }
 }

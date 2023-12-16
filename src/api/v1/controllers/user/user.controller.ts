@@ -255,6 +255,22 @@ export class UserController {
         }
     };
 
+    countFollowOrg = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const orgId = req.params.orgid;
+            const countFollowResult = await this.userServiceInstance.getAllFollow(orgId);
+            if (countFollowResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, countFollowResult.success, countFollowResult.follow));
+            }
+            else {
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, countFollowResult.error, null));
+            }
+        } catch (error: any) {
+            console.error('Lỗi khi bỏ theo dõi người dùng:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    };
+
 }
 
 

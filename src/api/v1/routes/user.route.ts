@@ -30,5 +30,6 @@ userRoute.get('/org/:orgid', authenticateToken, userControllerInstance.getDetail
 //#region Follow
 userRoute.post('/user/follow', authenticateToken,userControllerInstance.followUser);
 userRoute.post('/user/unfollow', authenticateToken,userControllerInstance.unfollowUser);
+userRoute.get('/user/follow/:orgid', authenticateToken,userControllerInstance.countFollowOrg);
 //#endregion
 export default userRoute;
