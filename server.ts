@@ -69,11 +69,15 @@ const client = new Client(serverConfig.postgre);
 // Connect to the PostgreSQL database
 client.connect()
   .then(() => {
-    console.info('Connected to PostgreSQL database');
+    console.info('✅ [server]: Connected to PostgreSQL database');
     // Perform database operations here
   })
   .catch((error: Error) => {
     console.error('Error connecting to PostgreSQL database:', error.message);
+  }).finally(() => {
+    client.end()
+      .then(() => console.info('Disconnected from PostgreSQL database'))
+      .catch((disconnectError: any) => console.error('Error disconnecting from PostgreSQL database:', disconnectError.message))
   });
 
 // Start server

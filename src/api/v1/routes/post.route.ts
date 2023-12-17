@@ -40,6 +40,8 @@ postRoute.get('/post/like/:postId', authenticateToken,postRedisControllerInstanc
 
 //get 10 user create most post in a month ago
 postRoute.get('/user/productive-activities',postControllerInstance.getAllTopOrgCreatePost);
+//get 10 post user join most
+postRoute.get('/post-top/out-standing',postControllerInstance.getAllTopPostUserJoinMost);
 
 
 //#region COMMENT

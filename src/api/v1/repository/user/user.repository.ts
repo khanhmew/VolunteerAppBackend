@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 import User, { IUser } from './user.entity';
+import Report from './report.entity';
 import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, WrongPasswordError } from '../../../../shared/error/auth.error';
 import { uploadImageFromFormData } from '../../services/firebase.service';
 import { OrgActiveBefore } from '../../../../shared/error/auth.error';
 import { PermissionRepository } from '../auth/permission.repository';
 import { UserDTO } from '../../DTO/user.dto'
 import { OrgDTO } from '../../DTO/org.dto';
+import { ReportDTO } from '../../DTO/report.dto';
 const bcrypt = require('bcrypt');
 
 export class UserRepository {
@@ -157,7 +159,7 @@ export class UserRepository {
                     userResultForUpdate.isActive = updatedUser?.isActiveOrganization;
                     userResultForUpdate.type = 'Organization'
                 }
-                else{
+                else {
                     userResultForUpdate.type = 'User'
                 }
                 return { userResultForUpdate };
@@ -348,4 +350,100 @@ export class UserRepository {
     }
 
     //#endregion ADMIN
+
+
+
+    //region REPORT 
+    async sendReport(report: any) {
+        try {
+            // Validate input parameters
+            if (!report || !report.userId || !report.orgId || !report.content) {
+                throw new Error('Invalid report data. Missing required fields.');
+            }
+
+            const newReport = new Report({
+                userSendId: report.userId,
+                orgReport: report.orgId,
+                content: report.content,
+                image: report.img
+            });
+
+            const resultReport = await newReport.save();
+
+            const response = {
+                message: 'Report submitted successfully',
+                report: resultReport,
+            };
+
+            return response;
+        } catch (error) {
+            console.error('Error sending report:', error);
+            return error
+        }
+    }
+
+
+    async solveReport(reportId: any) {
+        try {
+            const reportForSolve = await Report.findOneAndUpdate({ _id: reportId }, { $set: { isSolved: true } })
+            return reportForSolve;
+        } catch (error) {
+            console.log(`err: ${error}`)
+        }
+    }
+
+    async getAllReportByType(solved: any)
+    {
+        if (solved == true) {
+            const allReport = Report.find({
+                isSolved: true
+            })
+            return allReport
+        }
+        else if (solved == false) {
+            const allReport = Report.find({
+                isSolved: false
+            })
+            return allReport
+        }
+        const allReport = Report.find()
+        return allReport
+    }
+    async getAllReport(solved: any) {
+        try {
+            const allReport = await this.getAllReportByType(solved);
+            const reportsInformation = await Promise.all(allReport.map(async (report) => {
+                try {
+                    const orgInfo = await this.getExistOrgById(report.orgReport);
+                    const userInfo = await this.getExistUserById(report.userSendId);
+                    const reportResult: ReportDTO = {
+                        _id: report._id,
+                        content: report.content,
+                        img: report.image,
+                        orgAvt: orgInfo?.avatar,
+                        orgFullname: orgInfo?.fullname,
+                        orgId: report.orgReport,
+                        userSendId: report.userSendId,
+                        userSendAvatar: userInfo?.avatar,
+                        userSendFullname: userInfo?.fullname,
+                        userSendPhone: userInfo?.phone,
+                        dateReport: report.sendDate
+                    };
+                    return reportResult;
+                } catch (error) {
+                    console.error(`Error processing report ${report._id}:`, error);
+                    return null; 
+                }
+            }));
+    
+            const filteredReports = reportsInformation.filter(report => report !== null);
+    
+            return filteredReports;
+        } catch (error) {
+            console.error('Error in getAllReport:', error);
+            throw error;
+        }
+    }
+    
+    //endregion REPORT
 }

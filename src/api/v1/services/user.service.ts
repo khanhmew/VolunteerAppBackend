@@ -162,4 +162,35 @@ export class UserService {
     }
   }
 
+
+  //send report 
+  async sendReport(report: any) {
+    try {
+      const reportResult: any = await this.userRepository.sendReport(report);
+      return reportResult;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
+
+  async solveReport(reportId: any) {
+    try {
+      const reportResult: any = await this.userRepository.solveReport(reportId);
+      return reportResult;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
+
+  async getAllReport(solved: any){
+    try {
+      const allReports: any = await this.userRepository.getAllReport(solved);
+      return allReports;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
 }

@@ -214,4 +214,13 @@ export class PostService {
         return error
     }
   }
+
+  async getTopPostUserJoin(){
+    try {
+      const topPosts = await this.postRepository.getTopPostsMostUserJoinWithinLastMonth()
+        return topPosts
+    } catch (error) {
+        return error
+    }
+  }
 }

@@ -170,6 +170,13 @@ export class PostController {
     return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
   }
 
+  getAllTopPostUserJoinMost = async (req: Request, res: Response, next: NextFunction) => {
+    const topPosts: any = await this.postServiceInstance.getTopPostUserJoin();
+    if(topPosts)
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', topPosts))
+    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+  }
+
   //#region COMMENT
   commentAPost = async (req: Request, res: Response, next: NextFunction) => {
     try {

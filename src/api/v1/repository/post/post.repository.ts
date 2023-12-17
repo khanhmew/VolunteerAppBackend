@@ -332,9 +332,8 @@ export class PostRepository {
                     dateActivity: activityResult.dateActivity
                 };
                 const groupChat = await this.chatRepository.findGroupByActID(_userId, post.activityId)
-                if(groupChat?.success)
-                {
-                    postDetail.groupChatId= groupChat.groupId;
+                if (groupChat?.success) {
+                    postDetail.groupChatId = groupChat.groupId;
                     postDetail.isJoinGroupChat = groupChat.isJoinedGroup;
                 }
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
@@ -496,42 +495,101 @@ export class PostRepository {
     //get all user and sort that user create most post in a month ago
     async getTopUsersByPostCountWithinLastMonth() {
         try {
-            const currentDate = new Date();
-            const oneMonthAgo = new Date(currentDate);
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    
-            const allUsers = await User.find();
-    
-            const usersWithPostCount = [];
-    
-            for (const user of allUsers) {
-                const postCount = await Post.countDocuments({
-                    ownerId: user._id,
-                    updatedAt: { $gte: oneMonthAgo, $lt: currentDate }
-                });
-    
-                if (postCount > 0) {
-                    usersWithPostCount.push({
-                        userId: user._id,
-                        avatar: user.avatar,
-                        fullName: user.fullname,
-                        postCount
+            const cachedUsers = await redisClient.get(`top-users`);
+            if (!cachedUsers) {
+                const currentDate = new Date();
+                const oneMonthAgo = new Date(currentDate);
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+                const allUsers = await User.find();
+
+                const usersWithPostCount = [];
+
+                for (const user of allUsers) {
+                    const postCount = await Post.countDocuments({
+                        ownerId: user._id,
+                        updatedAt: { $gte: oneMonthAgo, $lt: currentDate }
                     });
+
+                    if (postCount > 0) {
+                        usersWithPostCount.push({
+                            userId: user._id,
+                            avatar: user.avatar,
+                            fullName: user.fullname,
+                            postCount
+                        });
+                    }
                 }
+
+                usersWithPostCount.sort((a, b) => b.postCount - a.postCount);
+
+                const topUsers = usersWithPostCount.slice(0, 10);
+
+                console.log('Danh sách người dùng với số bài viết:', topUsers);
+                await redisClient.set(`top-users`, JSON.stringify(topUsers));
+                const expirationInSeconds = 30 * 24 * 60 * 60;//1month
+                await redisClient.expire(`top-users`, expirationInSeconds);
+                return topUsers;
             }
-    
-            usersWithPostCount.sort((a, b) => b.postCount - a.postCount);
-    
-            const topUsers = usersWithPostCount.slice(0, 10);
-    
-            console.log('Danh sách người dùng với số bài viết:', topUsers);
-    
-            return topUsers;
+            return JSON.parse(cachedUsers)
         } catch (error) {
             console.error('Lỗi khi lấy danh sách người dùng và sắp xếp: ', error);
             throw error;
         }
     }
-    
-    
+
+    //get top post in a month that hast most of user join
+    async getTopPostsMostUserJoinWithinLastMonth() {
+        try {
+            const cachedPosts = await redisClient.get(`top-posts`);
+            if (!cachedPosts) {
+                const currentDate = new Date();
+                const oneMonthAgo = new Date(currentDate);
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+                const allPosts = await Post.find({
+                    createdAt: { $gte: oneMonthAgo, $lt: currentDate }
+                });
+
+                const postWithActCount = [];
+
+                for (const post of allPosts) {
+                    const actSort = await Activity.findOne({ postId: post._id })
+                        .sort({ numOfPeopleParticipated: -1 })
+                        .limit(10);
+
+                    if (actSort) {
+                        const postOwner = await User.findOne({ _id: post.ownerId });
+                        postWithActCount.push({
+                            _id: post._id,
+                            content: post.content,
+                            participants: actSort.participants,
+                            numOfPeopleParticipated: actSort.numOfPeopleParticipated as number,
+                            media: post.media,
+                            ownerInfo: {
+                                userId: postOwner?._id,
+                                avatar: postOwner?.avatar,
+                                fullName: postOwner?.fullname
+                            }
+                        });
+                    }
+                }
+
+                // Sắp xếp danh sách bài viết theo numOfPeopleParticipated giảm dần
+                postWithActCount.sort((a, b) => b.numOfPeopleParticipated - a.numOfPeopleParticipated);
+
+                const topPosts = postWithActCount.slice(0, 10);
+
+                console.log('Danh sách bài viết với số người tham gia:', topPosts);
+                await redisClient.set(`top-posts`, JSON.stringify(topPosts));
+                await redisClient.expire(`top-posts`, 900);
+                return topPosts;
+            }
+            return JSON.parse(cachedPosts);
+
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách bài viết và sắp xếp: ', error);
+            throw error;
+        }
+    }
 }   
