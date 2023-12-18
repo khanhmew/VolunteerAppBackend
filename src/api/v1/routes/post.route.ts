@@ -48,4 +48,8 @@ postRoute.get('/post-top/out-standing',postControllerInstance.getAllTopPostUserJ
 postRoute.post('/post/comment', authenticateToken, postControllerInstance.commentAPost);
 postRoute.get('/post/:postId/comments', postControllerInstance.getAllComment);
 //#endregion
+
+//#region ADMIN
+postRoute.get('/search-post', postControllerInstance.searchPost);
+//#endregion ADMIN
 export default postRoute;

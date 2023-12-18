@@ -592,4 +592,25 @@ export class PostRepository {
             throw error;
         }
     }
+
+    //#region SEARCH
+    async searchPost(text: string) {
+        const result = Post.aggregate([
+            {
+                $search: {
+                    index: "search_post",
+                    text: {
+                        query: text,
+                        path: {
+                            wildcard: "*"
+                        }
+                    }
+                }
+            }
+        ])
+        console.log(`RESULT SEARCH: `, result);
+        return result;
+    }
+    //#endregion SEARCH
+
 }   

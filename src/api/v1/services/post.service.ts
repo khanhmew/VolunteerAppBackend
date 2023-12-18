@@ -223,4 +223,13 @@ export class PostService {
         return error
     }
   }
+
+  async searchPost(text: any){
+    try {
+      const searchPosts = await this.postRepository.searchPost(text);
+        return searchPosts
+    } catch (error) {
+        return error
+    }
+  }
 }
