@@ -193,4 +193,14 @@ export class UserService {
       throw error;
     }
   }
+
+  async searchUser(text: any){
+    try {
+      const userResult: any = await this.userRepository.searchUser(text);
+      return userResult;
+    } catch (error) {
+      console.log('Error when search: ', error);
+      throw error;
+    }
+  } 
 }

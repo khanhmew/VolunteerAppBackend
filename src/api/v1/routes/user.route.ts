@@ -16,7 +16,7 @@ const upload = multer({
 //userRoute.post('/user', authenticateToken, userControllerInstance.saveUserCallback);
 userRoute.put('/user', authenticateToken, upload.single('avatar'), userControllerInstance.updateUserProfile);
 userRoute.put('/org/verify', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
-
+userRoute.get('/user/seacrh', userControllerInstance.searchUser);
 
 
 //#region Admin 

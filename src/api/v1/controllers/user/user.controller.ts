@@ -83,7 +83,7 @@ export class UserController {
             const checkRole = await this.permissionRespository.hasPermission(userId, 'REPORT')
             if (checkRole) {
                 const users = await this.userServiceInstance.solveReport(reportId);
-                if(users)
+                if (users)
                     return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Solved success', users.user));
             }
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Access denied', null));
@@ -100,7 +100,7 @@ export class UserController {
             const checkRole = await this.permissionRespository.hasPermission(userId, 'REPORT')
             if (checkRole) {
                 const reports = await this.userServiceInstance.getAllReport(solve);
-                if(reports)
+                if (reports)
                     return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', reports));
             }
             return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Access denied', null));
@@ -173,7 +173,7 @@ export class UserController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
         }
     }
-    
+
     //#endregion ADMIN
     updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -255,7 +255,7 @@ export class UserController {
         }
     }
 
-    
+
     followUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const followerId = req.user.userId;
@@ -310,41 +310,54 @@ export class UserController {
     //send report 
     sendReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-          const newReport: any = {
-            userId: req.user.userId,
-            orgId: req.body.orgId,
-            content: req.body.content
-          }
-          const uploadedImages = req.files; // Mảng các tệp đã tải lên
-          if (uploadedImages && uploadedImages.length > 0) {
-            const imageUrls = [];
-            for (const uploadedImage of uploadedImages) {
-              const remoteFileName = `report/${req.user.userId}/${uploadedImage.originalname}`;
-              
-              // Log kích thước hình ảnh gốc
-              console.log(`Image size before processing: ${uploadedImage.size} bytes`);
-            
-              const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
-              
-              // Log kích thước hình ảnh sau khi xử lý
-              console.log(`Image size after processing: ${imageUrl ? await getImageSize(imageUrl) : 'N/A'}`);
-            
-              imageUrls.push(imageUrl);
+            const newReport: any = {
+                userId: req.user.userId,
+                orgId: req.body.orgId,
+                content: req.body.content
             }
-            
-            newReport.img = imageUrls;
-            const reportResultForCreate = await this.userServiceInstance.sendReport(newReport);
-            if (reportResultForCreate) {
-              return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Send success', reportResultForCreate));
+            const uploadedImages = req.files; // Mảng các tệp đã tải lên
+            if (uploadedImages && uploadedImages.length > 0) {
+                const imageUrls = [];
+                for (const uploadedImage of uploadedImages) {
+                    const remoteFileName = `report/${req.user.userId}/${uploadedImage.originalname}`;
+
+                    // Log kích thước hình ảnh gốc
+                    console.log(`Image size before processing: ${uploadedImage.size} bytes`);
+
+                    const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
+
+                    // Log kích thước hình ảnh sau khi xử lý
+                    console.log(`Image size after processing: ${imageUrl ? await getImageSize(imageUrl) : 'N/A'}`);
+
+                    imageUrls.push(imageUrl);
+                }
+
+                newReport.img = imageUrls;
+                const reportResultForCreate = await this.userServiceInstance.sendReport(newReport);
+                if (reportResultForCreate) {
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Send success', reportResultForCreate));
+                }
+                else {
+                    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Send fail', null));
+                }
             }
-            else {
-              return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Send fail', null));
-            }
-          }
         } catch (error) {
             return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Send fail', null));
         }
-      }
+    }
+
+    //search user
+    searchUser = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const queryText = req.query.text;
+            const resultSearch = await this.userServiceInstance.searchUser(queryText);
+            if (resultSearch)
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'search success', resultSearch));
+            return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'not user found', null));
+        } catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }
 
 

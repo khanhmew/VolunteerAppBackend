@@ -392,8 +392,7 @@ export class UserRepository {
         }
     }
 
-    async getAllReportByType(solved: any)
-    {
+    async getAllReportByType(solved: any) {
         if (solved == true) {
             const allReport = Report.find({
                 isSolved: true
@@ -432,18 +431,40 @@ export class UserRepository {
                     return reportResult;
                 } catch (error) {
                     console.error(`Error processing report ${report._id}:`, error);
-                    return null; 
+                    return null;
                 }
             }));
-    
+
             const filteredReports = reportsInformation.filter(report => report !== null);
-    
+
             return filteredReports;
         } catch (error) {
             console.error('Error in getAllReport:', error);
             throw error;
         }
     }
-    
+
     //endregion REPORT
+
+
+    //#region SEARCH
+    async searchUser(text: string) {
+        const result = User.aggregate([
+            {
+                $search: {
+                    index: "search_user",
+                    text: {
+                        query: text,
+                        path: {
+                            wildcard: "*"
+                        }
+                    }
+                }
+            }
+        ])
+        console.log(`RESULT SEARCH: `, result);
+        return result;
+    }
+
+    //endregion SEARCH
 }
