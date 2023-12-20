@@ -64,7 +64,7 @@ export class UserRepository {
         }).select(['username']);
     }
 
-    getExistUserById = async (_idUser: string) => {
+    getExistUserById = async (_idUser: any) => {
         try {
             const user = await User.findOne({
                 _id: _idUser

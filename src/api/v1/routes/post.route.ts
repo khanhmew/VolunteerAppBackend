@@ -55,4 +55,5 @@ postRoute.get('/post/:postId/comments', postControllerInstance.getAllComment);
 postRoute.get('/search-post', postControllerInstance.searchPost);
 //#endregion ADMIN
 postRoute.post('/search-es', searchController.search)
+postRoute.post('/search-es/autocomplete', searchController.autoComplete)
 export default postRoute;

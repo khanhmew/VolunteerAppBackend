@@ -9,14 +9,15 @@ export interface INotify {
     actionLink: String,
     messageType: String,
     status: String,
-    isSeen: boolean
+    isSeen: boolean,
+    activityId: String
 }
 
 export interface INotifyModel extends INotify, Document { }
 
 const INotifySchema: Schema = new Schema(
     {
-        postId: {type: String, require: true},
+        postId: {type: String, require: false},
         senderId: {type: String, required: true},
         createdAt: {type: Date, default: Date.now },
         receiveId: {type: String, require: false},
@@ -25,6 +26,7 @@ const INotifySchema: Schema = new Schema(
         messageType: {type: String, require: true},
         status: {type: String, require: true},
         isSeen: {type: Boolean, require: true},
+        activityId: {type: String, require: false},
     },
     {
         versionKey: false

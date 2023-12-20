@@ -9,8 +9,15 @@ import { ActDTO } from '../../DTO/activity.dto';
 import { generateQRCode } from "../../services/qrcode.service";
 import { PostRepository } from '../post/post.repository';
 import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
+import { NotiRepository } from '../notify/noti.repository';
 
 export class ActivityRepository {
+  private readonly notiRepository!: NotiRepository;
+
+  constructor() {
+    this.notiRepository = new NotiRepository();
+  }
+
   createNewActivity = async (_post: any) => {
     const activitySave: any = new Activity({
       participants: _post.participants,
@@ -163,6 +170,18 @@ export class ActivityRepository {
         activity.numOfPeopleParticipated = activity.numOfPeopleParticipated as number + 1;
       }
       await activity.save();
+      const notiForSend = {
+        activityId: activity._id,
+        senderId: userId,
+        receiveId: activity.ownerId,
+        message: 'và ' + activity.numOfPeopleParticipated + ' ngừoi khác đã tham gia vào hoạt động của bạn',
+        createAt: new Date(),
+        actionLink: '',
+        messageType: "join",
+        status: '',
+        isSeen: false
+      }
+      await this.notiRepository.createNoti(notiForSend)
       const PostInfor: any = await this.findPostBaseActId(activityId);
       const postSendMail: any = ({
         dateActivity: activity.dateActivity,
@@ -329,7 +348,7 @@ export class ActivityRepository {
 
   getAllUserAttendanceAct = async (_activityId: any) => {
     try {
-      const allJoins = Join.find({ activityId: _activityId , isAttended: true});
+      const allJoins = Join.find({ activityId: _activityId, isAttended: true });
       const allUsers = await Promise.all(
         (await allJoins).map(async (join) => {
           const user = await User.findOne({ _id: join.userId });

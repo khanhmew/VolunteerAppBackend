@@ -10,6 +10,7 @@ import userRoute from './src/api/v1/routes/user.route';
 import authRoute from './src/api/v1/routes/auth.route';
 import chatRoute from './src/api/v1/routes/chat.route';
 import activityRoute from './src/api/v1/routes/activity.route';
+import userPageRoute from './src/api/v1/routes/userpage.route';
 import axios from 'axios';
 import { CORSMiddleware } from './src/middleware/CORS.middleware';
 import { SocketIOServer } from './src/socket/v1/socket-io.server';
@@ -194,6 +195,7 @@ const startHTTPServer = () => {
   routes.use(postRoute);
   routes.use(chatRoute);
   routes.use(activityRoute);
+  routes.use(userPageRoute);
 
   // server.use('',  (req: Request, res: Response, next: NextFunction) => {
   //   return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'I need U'));

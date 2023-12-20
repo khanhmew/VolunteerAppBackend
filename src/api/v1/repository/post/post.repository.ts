@@ -5,6 +5,7 @@ import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
 import Join from '../activity/join.entity';
 import { UserRepository } from '../user/user.repository';
+import {NotiRepository} from '../notify/noti.repository'
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';
 import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
@@ -22,6 +23,7 @@ export class PostRepository {
     private readonly activityRepository!: ActivityRepository;
     private readonly followRepository!: FollowRepository;
     private readonly chatRepository!: ChatRepository;
+    private readonly notiRepository!: NotiRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
@@ -29,6 +31,7 @@ export class PostRepository {
         this.followRepository = new FollowRepository();
         this.followRepository = new FollowRepository();
         this.chatRepository = new ChatRepository();
+        this.notiRepository = new NotiRepository();
     }
 
     checkPostExist = async (_postId: any) => {
@@ -43,7 +46,7 @@ export class PostRepository {
         }
     }
 
-    checkPostExists = async (_postId: any) => {
+    getPostExists = async (_postId: any) => {
         try {
             const post = await Post.exists({
                 _id: _postId
@@ -51,6 +54,18 @@ export class PostRepository {
             if (post)
                 return true;
             return false;
+        } catch (error) {
+            console.error('Error getting post by ID:', error);
+            throw error;
+        }
+    }
+
+    getPostExist = async (_postId: any) => {
+        try {
+            const post = await Post.findOne({
+                _id: _postId
+            });
+            return post
         } catch (error) {
             console.error('Error getting post by ID:', error);
             throw error;
@@ -415,7 +430,7 @@ export class PostRepository {
 
     async commentAPost(_ownerId: any, _postId: any, _content: any) {
         const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
-        const checkPostExist = await this.checkPostExists(_postId);
+        const checkPostExist = await this.getPostExist(_postId);
         if (!checkExistUser)
             return ({ error: 'User not exist' });
         if (!checkPostExist)
@@ -437,12 +452,24 @@ export class PostRepository {
             ownerAvatar: userComment?.avatar,
             ownerDisplayname: userComment?.fullname
         })
+        const notiForSend = {
+            postId: _postId,
+            senderId:_ownerId ,
+            receiveId: checkPostExist.ownerId,
+            message: commentResult.content,
+            createAt: new Date(),
+            actionLink: '',
+            messageType: "comment",
+            status: '',
+            isSeen: false
+        }
+        await this.notiRepository.createNoti(notiForSend)
         return ({ success: 'Save success', comment: commentResult })
     }
 
     async replyAComment(_ownerId: any, _postId: any, _content: any, _commentParentId: any) {
         const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
-        const checkPostExist = await this.checkPostExists(_postId);
+        const checkPostExist = await this.checkPostExist(_postId);
         if (!checkExistUser)
             return ({ error: 'User not exist' });
         if (!checkPostExist)

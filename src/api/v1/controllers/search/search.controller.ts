@@ -6,19 +6,33 @@ import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, Partici
 import { PostRepository } from "../../repository/post/post.repository";
 import { getTotalLikesForPost, hasUserLikedPost, saveLikeForPost, unlikeForPost } from "../../../../redis/redisUtils";
 import mongoose, { isValidObjectId } from "mongoose";
-import { search } from "../../services/search.service";
+import { autocompleteSearch, search } from "../../services/search.service";
 export class SearchController {
 
     search = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {query_string, default_field } = req.body.params;
-    
+            const { query_string, default_field } = req.body.params;
+
             const result = await search(query_string, default_field);
-    
+
             res.json(result);
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }
+
+    autoComplete = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { query_string } = req.body.params;
+
+            const result = await autocompleteSearch(query_string);
+
+            res.json(result);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    };
+
 }
