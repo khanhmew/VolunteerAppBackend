@@ -12,6 +12,9 @@ const POSTGRE_DATABASE_NAME = process.env.POSTGRE_DATABASE_NAME ?? '';
 const POSTGRE_USERNAME = process.env.POSTGRE_USERNAME ?? '';
 const POSTGRE_PASSWORD = process.env.POSTGRE_PASSWORD ?? '';
 
+const ELASTIC_CLOUD = process.env.ELASTIC_CLOUD ?? '';
+const ELASTIC_USERNAME = process.env.ELASTIC_USERNAME ?? '';
+const ELASTIC_PASSWORD = process.env.ELASTIC_PASSWORD ?? '';
 
 const REDIS_PORT = process.env.REDIS_PORT ?? '';
 const REDIS_HOST = process.env.REDIS_HOST ?? '';
@@ -42,6 +45,14 @@ export const serverConfig = {
     sslmode: 'required',
     ssl: {
       rejectUnauthorized: false,
+    },
+  },esclient:{
+    cloud: {
+      id: ELASTIC_CLOUD,
+    },
+    auth: {
+      username: ELASTIC_USERNAME,
+      password: ELASTIC_PASSWORD,
     },
   },
   redis: {

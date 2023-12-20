@@ -3,10 +3,12 @@ import { PostController } from '../controllers/post/post.controller';
 import { ActivityController } from '../controllers/post/activity.controller'
 import { authenticateToken } from '../../../middleware/token.middleware';
 import { PostRedisController } from '../controllers/post/postRedis.controller';
+import {SearchController  } from '../controllers/search/search.controller';
 const postRoute = express.Router();
 const postControllerInstance = new PostController();
 const activityControllerInstance = new ActivityController();
 const postRedisControllerInstance = new PostRedisController();
+const searchController = new SearchController();
 
 const multer = require('multer');
 
@@ -52,4 +54,5 @@ postRoute.get('/post/:postId/comments', postControllerInstance.getAllComment);
 //#region ADMIN
 postRoute.get('/search-post', postControllerInstance.searchPost);
 //#endregion ADMIN
+postRoute.post('/search-es', searchController.search)
 export default postRoute;
