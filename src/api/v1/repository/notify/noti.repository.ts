@@ -72,7 +72,9 @@ export class NotiRepository {
                   const post: any = await this.findPostBaseActId(noti.activityId);
                   notiInfor.postId = post._id;
                 }
-      
+                else if (noti.messageType === 'block') {
+                  notiInfor.message = noti.message;
+                }
                 return notiInfor;
               } catch (error) {
                 console.error('Error fetching sender info:', error);

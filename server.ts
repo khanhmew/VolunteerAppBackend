@@ -19,6 +19,9 @@ import { Sequelize } from 'sequelize';
 import { authenticateToken } from './src/middleware/token.middleware';
 import postRoute from './src/api/v1/routes/post.route';
 const { MongoClient } = require('mongodb');
+import cron from 'node-cron';
+import { blockUserNotAttend } from './src/api/v1/repository/activity/activity.repository';
+
 
 
 // Thay đổi URL và các cài đặt khác tùy thuộc vào yêu cầu của bạn
@@ -161,6 +164,15 @@ async function syncDataWithElasticsearch(esClient: any, elasticsearchIndex: any,
 }
 // Start listening to changes
 listenToChanges().catch(console.error);
+
+
+//handle cron
+// cron job will run every day at midnight
+cron.schedule('0 0 * * *', async () => {
+  console.log('Running the cron job to block users...');
+  await blockUserNotAttend();
+});
+
 
 //Connect to postgre
 // Create a new PostgreSQL client

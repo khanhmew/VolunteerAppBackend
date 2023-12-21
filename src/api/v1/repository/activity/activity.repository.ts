@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { set } from 'mongoose';
 import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
 import Join from '../activity/join.entity';
@@ -10,6 +10,7 @@ import { generateQRCode } from "../../services/qrcode.service";
 import { PostRepository } from '../post/post.repository';
 import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
 import { NotiRepository } from '../notify/noti.repository';
+import { time } from 'console';
 
 export class ActivityRepository {
   private readonly notiRepository!: NotiRepository;
@@ -365,4 +366,62 @@ export class ActivityRepository {
       return { error: error }
     }
   }
+
+  blockUserNotAttend = async () => {
+    try {
+      const allUser = await User.find();
+      const user2Times: any = [];
+      const user3Times: any = [];
+  
+      await Promise.all(allUser.map(async (user) => {
+        const times = await Join.countDocuments({ userId: user._id, isAttended: false });
+        const userResult = {
+          userId: user._id,
+          time: times
+        };
+  
+        if (times === 2) {
+          user2Times.push(userResult);
+        } else if (times === 3) {
+          user3Times.push(userResult);
+        }
+      }));
+      await Promise.all(user3Times.map(async (userForBan: any) => {
+        await this.blockUser(userForBan.userId)
+      }));
+      await Promise.all(user2Times.map(async (userForBan: any) => {
+        const notiForSend = {
+          activityId: "",
+          senderId: "656f0de17eb17d1767d0361b",
+          receiveId: userForBan.userId,
+          message: 'Bạn đã không tham gia hoạt động quá 2 lần! Tài khoản sẽ bị khoá vào lần sau!',
+          createAt: new Date(),
+          actionLink: '',
+          messageType: "block",
+          status: '',
+          isSeen: false
+        }
+        await this.notiRepository.createNoti(notiForSend)
+      }));
+      return { user2Times, user3Times };
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  blockUser = async (userId: any) => {
+    try {
+      const userUpdate = await User.findOneAndUpdate({ _id: userId }, { $set: { isEnable: false } }, { new: true });
+  
+      if (userUpdate) {
+        console.log(`User with ID ${userId} has been blocked successfully.`);
+      } else {
+        console.log(`User with ID ${userId} not found or not updated.`);
+      }
+    } catch (error) {
+      console.error('Error blocking user:', error);
+    }
+  };
+  
 }
+export const { blockUserNotAttend } = new ActivityRepository();
