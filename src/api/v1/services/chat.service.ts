@@ -42,9 +42,29 @@ export class ChatService {
     }
   }
 
+  getAllGroupUserJoinedAdimin = async(_adminId: any) => {
+    try{
+        const group: any = await this.chatRepository.getAllJoinedGroupsAdmin(_adminId);
+        return group;
+    }
+    catch(error){
+        console.log(error);
+    }
+  }
+
   createGroup = async(_group: any) => {
     try{
         const joinResult = await this.chatRepository.createGroup(_group);
+        return joinResult
+    }
+    catch(error){
+        console.log(error);
+    }
+  }
+
+  createChatAdmin = async(_group: any) => {
+    try{
+        const joinResult = await this.chatRepository.adminChat(_group);
         return joinResult
     }
     catch(error){

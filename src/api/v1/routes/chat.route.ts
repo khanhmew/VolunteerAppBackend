@@ -17,4 +17,7 @@ chatRoute.post('/group', authenticateToken, upload.single('avatar'), chatControl
 chatRoute.post('/group/member/:groupId', authenticateToken, chatControllerInstance.joinGroup);
 chatRoute.get('/groups/join', authenticateToken, chatControllerInstance.getAllGroupUserJoin);
 
+//region admin
+chatRoute.post('/chat-admin', authenticateToken, chatControllerInstance.createChatAdmin);
+chatRoute.get('/chat-admin/join', authenticateToken, chatControllerInstance.getAllGroupUserJoinAdmin);
 export default chatRoute;
