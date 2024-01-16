@@ -139,21 +139,20 @@ export class PostRepository {
                 //#region REDIS CACHE
                 const cacheKey = `posts:page:1`;
                 let postsInformation: any = [];
-
+                const postAddCache =await this.getDetailPost(postResult._id, _post.ownerId);
                 // Kiểm tra xem danh sách postsInformation có trong cache hay không
                 const cachedPosts = await redisClient.get(cacheKey);
                 if (cachedPosts) {
                     postsInformation = JSON.parse(cachedPosts);
+                    const isPostInCache = postsInformation.some((postInfo: any) => postInfo._id === postResult._id);
+                    if (!isPostInCache) {
+                        postsInformation.unshift(postAddCache);
+                        await redisClient.set(cacheKey, JSON.stringify(postsInformation));
+                    }
                 }
 
-                // Kiểm tra xem post mới đã có trong cache hay chưa
-                const isPostInCache = postsInformation.some((postInfo: any) => postInfo._id === postResult._id);
-
-                if (!isPostInCache) {
-                    postsInformation.unshift(postSave);
-                    await redisClient.set(cacheKey, JSON.stringify(postsInformation));
-                }
-                return postSave;
+                
+                return postAddCache;
             }
             else {
                 throw new OrgNotActive('OrgNotActive');
