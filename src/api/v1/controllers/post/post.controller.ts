@@ -34,18 +34,18 @@ export class PostController {
         const imageUrls = [];
         for (const uploadedImage of uploadedImages) {
           const remoteFileName = `post/${req.user.userId}/${uploadedImage.originalname}`;
-          
+
           // Log kích thước hình ảnh gốc
           console.log(`Image size before processing: ${uploadedImage.size} bytes`);
-        
+
           const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
-          
+
           // Log kích thước hình ảnh sau khi xử lý
           console.log(`Image size after processing: ${imageUrl ? await getImageSize(imageUrl) : 'N/A'}`);
-        
+
           imageUrls.push(imageUrl);
         }
-        
+
         newPost.media = imageUrls;
         const postResultForCreate = await this.postServiceInstance.savePost(newPost);
         if (postResultForCreate) {
@@ -76,13 +76,13 @@ export class PostController {
   getAllPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;   
-      var userIdForCheckJoin ='';
-      if(req.user){
+      const limit = Number(req.query.limit) || 10;
+      var userIdForCheckJoin = '';
+      if (req.user) {
         userIdForCheckJoin = req.user.userId;
-      } 
+      }
       const posts = await this.postServiceInstance.getAllPost(page, limit, userIdForCheckJoin);
-      if(posts.posts.length < 1){
+      if (posts.posts.length < 1) {
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));
@@ -94,17 +94,17 @@ export class PostController {
   getAllPostUserFollow = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;   
-      var userIdForCheckJoin ='';
-      if(req.user){
+      const limit = Number(req.query.limit) || 10;
+      var userIdForCheckJoin = '';
+      if (req.user) {
         userIdForCheckJoin = req.user.userId;
-      } 
+      }
       const posts: any = await this.postServiceInstance.getAllPostUserFollow(page, limit, userIdForCheckJoin);
-      if(posts.postsInformation.length < 1){
+      if (posts.postsInformation.length < 1) {
         console.log('Out of post')
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
-      if(posts.error){
+      if (posts.error) {
         console.log(posts.error)
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, posts.error, null));
       }
@@ -118,11 +118,11 @@ export class PostController {
     try {
       const postId = req.params.orgId;
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;   
-      var userIdForCheckJoin ='';
-      if(req.user){
+      const limit = Number(req.query.limit) || 10;
+      var userIdForCheckJoin = '';
+      if (req.user) {
         userIdForCheckJoin = req.user.userId;
-      }   
+      }
       const posts = await this.postServiceInstance.getAllPostByOrg(userIdForCheckJoin, postId, page, limit);
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', posts));
     } catch (error) {
@@ -134,10 +134,10 @@ export class PostController {
   getDetailPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const postIdForGet = req.params.postId;
-      var userIdForCheckJoin ='';
-      if(req.user){
+      var userIdForCheckJoin = '';
+      if (req.user) {
         userIdForCheckJoin = req.user.userId;
-      }  
+      }
       const postDetail = await this.postServiceInstance.getDetaiPost(postIdForGet, userIdForCheckJoin);
       res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', postDetail));
     } catch (error) {
@@ -147,26 +147,40 @@ export class PostController {
   }
   getPostsNearest = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if(!req.user){
+      if (!req.user) {
         return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'User must login', null));
       }
       const userForGetId = req.user.userId;
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;   
-      const postsGet: any = await this.postServiceInstance.getNearbyPosts(userForGetId,page, limit );
-      if(postsGet.length < 1){
+      const limit = Number(req.query.limit) || 10;
+      const postsGet: any = await this.postServiceInstance.getNearbyPosts(userForGetId, page, limit);
+      if (postsGet.length < 1) {
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of post', null));
       }
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', postsGet));
     } catch (error: any) {
-        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
     }
+  }
+
+  getAllTopOrgCreatePost = async (req: Request, res: Response, next: NextFunction) => {
+    const topUsers: any = await this.postServiceInstance.getOrgCreateMostPost();
+    if (topUsers)
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', topUsers))
+    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+  }
+
+  getAllTopPostUserJoinMost = async (req: Request, res: Response, next: NextFunction) => {
+    const topPosts: any = await this.postServiceInstance.getTopPostUserJoin();
+    if (topPosts)
+      return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', topPosts))
+    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
   }
 
   //#region COMMENT
   commentAPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if(!req.user){
+      if (!req.user) {
         return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'User must login', null));
       }
       const userForCommentId = req.user.userId;
@@ -174,32 +188,32 @@ export class PostController {
       const contentForComment = req.body.content;
       const parentId = req.body.parentId;
 
-      if(contentForComment == '')
-        return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, 'Comment not allowed blank' , null))
-      if(parentId){
+      if (contentForComment == '')
+        return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, 'Comment not allowed blank', null))
+      if (parentId) {
         const resultCommentReply: any = await this.postServiceInstance.replyAComment(userForCommentId, postIdForComment, contentForComment, parentId);
-        if(resultCommentReply.success){
+        if (resultCommentReply.success) {
           return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, resultCommentReply.success, resultCommentReply.comment))
         }
         return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, resultCommentReply.error, null))
       }
       const resultComment: any = await this.postServiceInstance.commentAPost(userForCommentId, postIdForComment, contentForComment);
-      if(resultComment.success){
+      if (resultComment.success) {
         return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, resultComment.success, resultComment.comment))
       }
       return res.status(400).json(ResponseBase(ResponseStatus.SUCCESS, resultComment.error, null))
     } catch (error: any) {
-        return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
     }
   }
 
   getAllComment = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;  
+      const limit = Number(req.query.limit) || 10;
       const postIdForGet = req.params.postId;
-      const comments = await this.postServiceInstance.getAllCommentAPost(postIdForGet,page, limit);
-      if(comments.length < 1){
+      const comments = await this.postServiceInstance.getAllCommentAPost(postIdForGet, page, limit);
+      if (comments.length < 1) {
         return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Out of comment', null));
       }
       return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', comments));
@@ -209,4 +223,19 @@ export class PostController {
     }
   }
   //#endregion COMMENT
+
+
+  //search post
+  searchPost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const queryText = req.query.text;
+      const resultSearch = await this.postServiceInstance.searchPost(queryText);
+      if (resultSearch)
+        return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'search success', resultSearch));
+      return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'not post found', null));
+    } catch (error: any) {
+      return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+    }
+  }
+
 }

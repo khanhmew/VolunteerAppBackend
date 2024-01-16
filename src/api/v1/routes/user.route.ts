@@ -16,7 +16,7 @@ const upload = multer({
 //userRoute.post('/user', authenticateToken, userControllerInstance.saveUserCallback);
 userRoute.put('/user', authenticateToken, upload.single('avatar'), userControllerInstance.updateUserProfile);
 userRoute.put('/org/verify', authenticateToken, upload.array('images', 5), userControllerInstance.verifyOrganiztion)
-
+userRoute.get('/search-user', userControllerInstance.searchUser);
 
 
 //#region Admin 
@@ -25,10 +25,18 @@ userRoute.put('/user/ban/:userid',authenticateToken, userControllerInstance.banU
 userRoute.put('/org/active/:orgid', authenticateToken, userControllerInstance.activeOrganiztion)
 userRoute.get('/org/authen', authenticateToken, userControllerInstance.getAllOrgSendVerify)
 userRoute.get('/org/:orgid', authenticateToken, userControllerInstance.getDetailOrg)
+userRoute.post('/report', authenticateToken, userControllerInstance.solveReport)
+userRoute.post('/reports', authenticateToken, userControllerInstance.getAllReport)
 //#endregion Admin 
 
 //#region Follow
 userRoute.post('/user/follow', authenticateToken,userControllerInstance.followUser);
 userRoute.post('/user/unfollow', authenticateToken,userControllerInstance.unfollowUser);
+userRoute.get('/user/follow/:orgid', authenticateToken,userControllerInstance.countFollowOrg);
 //#endregion
+
+
+//region REPORT 
+userRoute.post('/user/report', upload.array('images', 5), authenticateToken,userControllerInstance.sendReport);
+//endregion REPORT 
 export default userRoute;

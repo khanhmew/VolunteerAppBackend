@@ -4,6 +4,7 @@ import { ActivityRepository } from '../activity/activity.repository';
 import { initGroupModel } from './grouppg.entity'; // Thay đổi đường dẫn đến file của bạn
 import { initMemberModel } from './memberpg.entity';
 import { initMessageModel } from './message.entity';
+import { initAdminChatModel } from './adminchat.entity';
 import User from '../user/user.entity';
 import { Sequelize, DataTypes, Model, QueryTypes } from 'sequelize';
 import { serverConfig } from '../../../../config/server.config';
@@ -27,6 +28,7 @@ const sequelize = new Sequelize({
 const Group = initGroupModel(sequelize);
 const Member = initMemberModel(sequelize);
 const Message = initMessageModel(sequelize)
+const AdminChat = initAdminChatModel(sequelize)
 export class ChatRepository {
   private readonly userRepository!: UserRepository;
   private readonly activityRepository!: ActivityRepository;
@@ -140,6 +142,25 @@ export class ChatRepository {
     }
   };
 
+  adminChat = async (_admin: any) => {
+    try {
+      const { userId, adminid, userfullname, useravatar } = _admin;
+      const _adminchatid = uuidv4(); // Generate a unique groupId
+
+      const newChatAdmin = await AdminChat.create({
+        userid: userId,
+        adminid: adminid,
+        adminchatid: _adminchatid,
+        useravatar: useravatar,
+        userfullname: userfullname
+      });
+
+      return { success: 'Create success', adminchat: newChatAdmin };
+    } catch (error: any) {
+      return { error: error.message || 'An error occurred while creating the group' };
+    }
+  };
+
   joinGroup = async (userId: any, groupId: any) => {
     try {
       const groupForJoin: any = await Group.findByPk(groupId);
@@ -190,25 +211,62 @@ export class ChatRepository {
     }
   };
 
-  //get all group that user join 
+  // Get all groups that a user has joined
   getAllJoinedGroups = async (userId: any) => {
     try {
+      const groupAllResult: any[] = [];
+
+      // Query regular groups
       const joinedGroupsQuery = `
-        SELECT Groups.groupid, Groups.name, Groups.avatar
-        FROM Members
-        INNER JOIN Groups ON Members.groupid = Groups.groupid
-        WHERE Members.userid = :userId
-      `;
-  
+      SELECT Groups.groupid, Groups.name, Groups.avatar
+      FROM Members
+      LEFT JOIN Groups ON Members.groupid = Groups.groupid
+      WHERE Members.userid = :userId
+    `;
       const joinedGroups = await sequelize.query(joinedGroupsQuery, {
         replacements: { userId: userId },
-        type: QueryTypes.SELECT as any, // Use QueryTypes from sequelize instance
+        type: QueryTypes.SELECT as any,
       });
-  
-      return { success: 'Get joined groups success', group: joinedGroups };
+      groupAllResult.push(...joinedGroups);
+
+      // Query admin chat groups
+      const joinedGroupsQueryOnChatAdmin = `
+      SELECT *
+      FROM Adminchats
+      WHERE Adminchats.userid = :userId
+    `;
+      const joinedChatAdmin = await sequelize.query(joinedGroupsQueryOnChatAdmin, {
+        replacements: { userId: userId },
+        type: QueryTypes.SELECT as any,
+      });
+      groupAllResult.push(...joinedChatAdmin);
+
+      console.log('joinedChatAdmin:', joinedChatAdmin);
+      return { success: 'Get joined groups success', group: groupAllResult };
     } catch (error: any) {
       return { error: error.message || 'An error occurred while getting joined groups' };
     }
   };
-  
+
+ // Get all groups that a user has joined
+ getAllJoinedGroupsAdmin = async (adminId: any) => {
+  try {
+    const groupAllResult: any[] = [];
+
+    // Query admin chat groups
+    const joinedGroupsQueryOnChatAdmin = `
+    SELECT *
+    FROM Adminchats
+    WHERE Adminchats.adminid = :userId
+  `;
+    const joinedChatAdmin = await sequelize.query(joinedGroupsQueryOnChatAdmin, {
+      replacements: { userId: adminId },
+      type: QueryTypes.SELECT as any,
+    });
+    groupAllResult.push(...joinedChatAdmin);
+    return { success: 'Get joined groups success', group: groupAllResult };
+  } catch (error: any) {
+    return { error: error.message || 'An error occurred while getting joined groups' };
+  }
+};
 }

@@ -51,6 +51,25 @@ export class ChatController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+    createChatAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const newGroup: any = {
+                userId: req.user.userId,
+                adminid: '656d81b9a46cff9f337c1a2d',
+                userfullname: req.body.userfullname,
+                useravatar: req.body.useravatar
+            }
+            const createResult: any = await this.chatServiceInstance.createChatAdmin(newGroup);
+            if (createResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, createResult.success, createResult.group));
+            }
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, createResult.error, null));
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
     joinGroup = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userJoin = req.user.userId;
@@ -82,4 +101,20 @@ export class ChatController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
         }
     }
+
+    getAllGroupUserJoinAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userForGet = req.user.userId;
+            const groupResult: any = await this.chatServiceInstance.getAllGroupUserJoinedAdimin(userForGet);
+            console.log(`Response join group ${JSON.stringify(groupResult)}`)
+            if (groupResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, groupResult.success, groupResult.group));
+            }
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, groupResult.error, null));
+        }
+        catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
+
 }

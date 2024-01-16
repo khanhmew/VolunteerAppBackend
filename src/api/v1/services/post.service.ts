@@ -206,4 +206,30 @@ export class PostService {
     }
   }
   
+  async getOrgCreateMostPost(){
+    try {
+      const topUsers = await this.postRepository.getTopUsersByPostCountWithinLastMonth()
+        return topUsers
+    } catch (error) {
+        return error
+    }
+  }
+
+  async getTopPostUserJoin(){
+    try {
+      const topPosts = await this.postRepository.getTopPostsMostUserJoinWithinLastMonth()
+        return topPosts
+    } catch (error) {
+        return error
+    }
+  }
+
+  async searchPost(text: any){
+    try {
+      const searchPosts = await this.postRepository.searchPost(text);
+        return searchPosts
+    } catch (error) {
+        return error
+    }
+  }
 }

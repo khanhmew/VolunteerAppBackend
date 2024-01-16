@@ -114,6 +114,15 @@ export class UserService {
     }
   }
 
+  async getAllFollow(_orgId: any){
+    try {
+      const orgResult = await this.followRepository.getOrgFollowersAndFollowingCount(_orgId);
+      return orgResult;
+    } catch (error: any) {
+      return error;
+    }
+  }
+
   async getAllUsers(page: any, limit: any) {
     try {
       const allUsers: any = await this.userRepository.getAllUsers(page, limit);
@@ -153,4 +162,45 @@ export class UserService {
     }
   }
 
+
+  //send report 
+  async sendReport(report: any) {
+    try {
+      const reportResult: any = await this.userRepository.sendReport(report);
+      return reportResult;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
+
+  async solveReport(reportId: any) {
+    try {
+      const reportResult: any = await this.userRepository.solveReport(reportId);
+      return reportResult;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
+
+  async getAllReport(solved: any){
+    try {
+      const allReports: any = await this.userRepository.getAllReport(solved);
+      return allReports;
+    } catch (error) {
+      console.log('Error when send report:', error);
+      throw error;
+    }
+  }
+
+  async searchUser(text: any){
+    try {
+      const userResult: any = await this.userRepository.searchUser(text);
+      return userResult;
+    } catch (error) {
+      console.log('Error when search: ', error);
+      throw error;
+    }
+  } 
 }

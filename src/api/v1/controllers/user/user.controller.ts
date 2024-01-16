@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { UserService } from "../../services/user.service";
 import { AccountNotFoundError, AccountTypeNotAdmin, AccountTypeNotOrg, PasswordFormatError, WrongPasswordError } from "../../../../shared/error/auth.error";
 import { ResponseBase, ResponseStatus } from "../../../../shared/response/response.payload";
-import { uploadImageFromFormData } from "../../services/firebase.service";
+import { getImageSize, uploadImageFromFormData } from "../../services/firebase.service";
 import Follow from '../../repository/follow/follow.entity';
 import { PermissionRepository } from "../../repository/auth/permission.repository";
 const bcrypt = require('bcrypt');
@@ -74,6 +74,42 @@ export class UserController {
         }
     }
 
+
+    //solveReport
+    solveReport = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.userId
+            const reportId = req.body.reportId
+            const checkRole = await this.permissionRespository.hasPermission(userId, 'REPORT')
+            if (checkRole) {
+                const users = await this.userServiceInstance.solveReport(reportId);
+                if (users)
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Solved success', users.user));
+            }
+            return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Access denied', null));
+        } catch (error) {
+            console.error('Error getting users:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Solved fail', null));
+        }
+    }
+
+    getAllReport = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.userId
+            const solve = req.body.solve
+            const checkRole = await this.permissionRespository.hasPermission(userId, 'REPORT')
+            if (checkRole) {
+                const reports = await this.userServiceInstance.getAllReport(solve);
+                if (reports)
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Get success', reports));
+            }
+            return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'Access denied', null));
+        } catch (error) {
+            console.error('Error getting users:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
+        }
+    }
+
     activeOrganiztion = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const adminId = req.user.userId;
@@ -137,7 +173,7 @@ export class UserController {
             return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Get fail', null));
         }
     }
-    
+
     //#endregion ADMIN
     updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -219,7 +255,7 @@ export class UserController {
         }
     }
 
-    
+
     followUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const followerId = req.user.userId;
@@ -255,6 +291,73 @@ export class UserController {
         }
     };
 
+    countFollowOrg = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const orgId = req.params.orgid;
+            const countFollowResult = await this.userServiceInstance.getAllFollow(orgId);
+            if (countFollowResult.success) {
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, countFollowResult.success, countFollowResult.follow));
+            }
+            else {
+                return res.status(500).json(ResponseBase(ResponseStatus.ERROR, countFollowResult.error, null));
+            }
+        } catch (error: any) {
+            console.error('Lỗi khi bỏ theo dõi người dùng:', error);
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    };
+
+    //send report 
+    sendReport = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const newReport: any = {
+                userId: req.user.userId,
+                orgId: req.body.orgId,
+                content: req.body.content
+            }
+            const uploadedImages = req.files; // Mảng các tệp đã tải lên
+            if (uploadedImages && uploadedImages.length > 0) {
+                const imageUrls = [];
+                for (const uploadedImage of uploadedImages) {
+                    const remoteFileName = `report/${req.user.userId}/${uploadedImage.originalname}`;
+
+                    // Log kích thước hình ảnh gốc
+                    console.log(`Image size before processing: ${uploadedImage.size} bytes`);
+
+                    const imageUrl = await uploadImageFromFormData(uploadedImage, remoteFileName);
+
+                    // Log kích thước hình ảnh sau khi xử lý
+                    console.log(`Image size after processing: ${imageUrl ? await getImageSize(imageUrl) : 'N/A'}`);
+
+                    imageUrls.push(imageUrl);
+                }
+
+                newReport.img = imageUrls;
+                const reportResultForCreate = await this.userServiceInstance.sendReport(newReport);
+                if (reportResultForCreate) {
+                    return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'Send success', reportResultForCreate));
+                }
+                else {
+                    return res.status(500).json(ResponseBase(ResponseStatus.ERROR, 'Send fail', null));
+                }
+            }
+        } catch (error) {
+            return res.status(404).json(ResponseBase(ResponseStatus.ERROR, 'Send fail', null));
+        }
+    }
+
+    //search user
+    searchUser = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const queryText = req.query.text;
+            const resultSearch = await this.userServiceInstance.searchUser(queryText);
+            if (resultSearch)
+                return res.status(200).json(ResponseBase(ResponseStatus.SUCCESS, 'search success', resultSearch));
+            return res.status(400).json(ResponseBase(ResponseStatus.ERROR, 'not user found', null));
+        } catch (error: any) {
+            return res.status(500).json(ResponseBase(ResponseStatus.ERROR, error, null));
+        }
+    }
 }
 
 

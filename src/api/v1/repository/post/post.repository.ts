@@ -5,6 +5,7 @@ import Activity from '../activity/activity.entity';
 import User from '../user/user.entity';
 import Join from '../activity/join.entity';
 import { UserRepository } from '../user/user.repository';
+import {NotiRepository} from '../notify/noti.repository'
 import { DateFormat, ExpirationDateMustGreaterCurrentDate, OrgNotActive, ParticipantsMustGreaterThan0, PostMustCreateByOrg } from '../../../../shared/error/post.error';
 import { ActivityRepository } from '../activity/activity.repository';
 import { getTotalLikesForPost, redisClient } from '../../../../redis/redisUtils';
@@ -22,6 +23,7 @@ export class PostRepository {
     private readonly activityRepository!: ActivityRepository;
     private readonly followRepository!: FollowRepository;
     private readonly chatRepository!: ChatRepository;
+    private readonly notiRepository!: NotiRepository;
 
     constructor() {
         this.userRepository = new UserRepository();
@@ -29,6 +31,7 @@ export class PostRepository {
         this.followRepository = new FollowRepository();
         this.followRepository = new FollowRepository();
         this.chatRepository = new ChatRepository();
+        this.notiRepository = new NotiRepository();
     }
 
     checkPostExist = async (_postId: any) => {
@@ -43,7 +46,7 @@ export class PostRepository {
         }
     }
 
-    checkPostExists = async (_postId: any) => {
+    getPostExists = async (_postId: any) => {
         try {
             const post = await Post.exists({
                 _id: _postId
@@ -51,6 +54,18 @@ export class PostRepository {
             if (post)
                 return true;
             return false;
+        } catch (error) {
+            console.error('Error getting post by ID:', error);
+            throw error;
+        }
+    }
+
+    getPostExist = async (_postId: any) => {
+        try {
+            const post = await Post.findOne({
+                _id: _postId
+            });
+            return post
         } catch (error) {
             console.error('Error getting post by ID:', error);
             throw error;
@@ -124,21 +139,20 @@ export class PostRepository {
                 //#region REDIS CACHE
                 const cacheKey = `posts:page:1`;
                 let postsInformation: any = [];
-
+                const postAddCache =await this.getDetailPost(postResult._id, _post.ownerId);
                 // Kiểm tra xem danh sách postsInformation có trong cache hay không
                 const cachedPosts = await redisClient.get(cacheKey);
                 if (cachedPosts) {
                     postsInformation = JSON.parse(cachedPosts);
+                    const isPostInCache = postsInformation.some((postInfo: any) => postInfo._id === postResult._id);
+                    if (!isPostInCache) {
+                        postsInformation.unshift(postAddCache);
+                        await redisClient.set(cacheKey, JSON.stringify(postsInformation));
+                    }
                 }
 
-                // Kiểm tra xem post mới đã có trong cache hay chưa
-                const isPostInCache = postsInformation.some((postInfo: any) => postInfo._id === postResult._id);
-
-                if (!isPostInCache) {
-                    postsInformation.unshift(postSave);
-                    await redisClient.set(cacheKey, JSON.stringify(postsInformation));
-                }
-                return postSave;
+                
+                return postAddCache;
             }
             else {
                 throw new OrgNotActive('OrgNotActive');
@@ -332,9 +346,8 @@ export class PostRepository {
                     dateActivity: activityResult.dateActivity
                 };
                 const groupChat = await this.chatRepository.findGroupByActID(_userId, post.activityId)
-                if(groupChat?.success)
-                {
-                    postDetail.groupChatId= groupChat.groupId;
+                if (groupChat?.success) {
+                    postDetail.groupChatId = groupChat.groupId;
                     postDetail.isJoinGroupChat = groupChat.isJoinedGroup;
                 }
                 const likes = await getTotalLikesForPost(_postId); // Await the total likes
@@ -416,7 +429,7 @@ export class PostRepository {
 
     async commentAPost(_ownerId: any, _postId: any, _content: any) {
         const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
-        const checkPostExist = await this.checkPostExists(_postId);
+        const checkPostExist = await this.getPostExist(_postId);
         if (!checkExistUser)
             return ({ error: 'User not exist' });
         if (!checkPostExist)
@@ -438,12 +451,24 @@ export class PostRepository {
             ownerAvatar: userComment?.avatar,
             ownerDisplayname: userComment?.fullname
         })
+        const notiForSend = {
+            postId: _postId,
+            senderId:_ownerId ,
+            receiveId: checkPostExist.ownerId,
+            message: commentResult.content,
+            createAt: new Date(),
+            actionLink: '',
+            messageType: "comment",
+            status: '',
+            isSeen: false
+        }
+        await this.notiRepository.createNoti(notiForSend)
         return ({ success: 'Save success', comment: commentResult })
     }
 
     async replyAComment(_ownerId: any, _postId: any, _content: any, _commentParentId: any) {
         const checkExistUser = await this.userRepository.checkUserExist(_ownerId);
-        const checkPostExist = await this.checkPostExists(_postId);
+        const checkPostExist = await this.checkPostExist(_postId);
         if (!checkExistUser)
             return ({ error: 'User not exist' });
         if (!checkPostExist)
@@ -491,4 +516,127 @@ export class PostRepository {
             return ({ error: error })
         }
     }
+
+
+    //get all user and sort that user create most post in a month ago
+    async getTopUsersByPostCountWithinLastMonth() {
+        try {
+            const cachedUsers = await redisClient.get(`top-users`);
+            if (!cachedUsers) {
+                const currentDate = new Date();
+                const oneMonthAgo = new Date(currentDate);
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+                const allUsers = await User.find();
+
+                const usersWithPostCount = [];
+
+                for (const user of allUsers) {
+                    const postCount = await Post.countDocuments({
+                        ownerId: user._id,
+                        updatedAt: { $gte: oneMonthAgo, $lt: currentDate }
+                    });
+
+                    if (postCount > 0) {
+                        usersWithPostCount.push({
+                            userId: user._id,
+                            avatar: user.avatar,
+                            fullName: user.fullname,
+                            postCount
+                        });
+                    }
+                }
+
+                usersWithPostCount.sort((a, b) => b.postCount - a.postCount);
+
+                const topUsers = usersWithPostCount.slice(0, 10);
+
+                console.log('Danh sách người dùng với số bài viết:', topUsers);
+                await redisClient.set(`top-users`, JSON.stringify(topUsers));
+                const expirationInSeconds = 30 * 24 * 60 * 60;//1month
+                await redisClient.expire(`top-users`, expirationInSeconds);
+                return topUsers;
+            }
+            return JSON.parse(cachedUsers)
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách người dùng và sắp xếp: ', error);
+            throw error;
+        }
+    }
+
+    //get top post in a month that hast most of user join
+    async getTopPostsMostUserJoinWithinLastMonth() {
+        try {
+            const cachedPosts = await redisClient.get(`top-posts`);
+            if (!cachedPosts) {
+                const currentDate = new Date();
+                const oneMonthAgo = new Date(currentDate);
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+                const allPosts = await Post.find({
+                    createdAt: { $gte: oneMonthAgo, $lt: currentDate }
+                });
+
+                const postWithActCount = [];
+
+                for (const post of allPosts) {
+                    const actSort = await Activity.findOne({ postId: post._id })
+                        .sort({ numOfPeopleParticipated: -1 })
+                        .limit(10);
+
+                    if (actSort) {
+                        const postOwner = await User.findOne({ _id: post.ownerId });
+                        postWithActCount.push({
+                            _id: post._id,
+                            content: post.content,
+                            participants: actSort.participants,
+                            numOfPeopleParticipated: actSort.numOfPeopleParticipated as number,
+                            media: post.media,
+                            ownerInfo: {
+                                userId: postOwner?._id,
+                                avatar: postOwner?.avatar,
+                                fullName: postOwner?.fullname
+                            }
+                        });
+                    }
+                }
+
+                // Sắp xếp danh sách bài viết theo numOfPeopleParticipated giảm dần
+                postWithActCount.sort((a, b) => b.numOfPeopleParticipated - a.numOfPeopleParticipated);
+
+                const topPosts = postWithActCount.slice(0, 10);
+
+                console.log('Danh sách bài viết với số người tham gia:', topPosts);
+                await redisClient.set(`top-posts`, JSON.stringify(topPosts));
+                await redisClient.expire(`top-posts`, 900);
+                return topPosts;
+            }
+            return JSON.parse(cachedPosts);
+
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách bài viết và sắp xếp: ', error);
+            throw error;
+        }
+    }
+
+    //#region SEARCH
+    async searchPost(text: string) {
+        const result = Post.aggregate([
+            {
+                $search: {
+                    index: "search_post",
+                    text: {
+                        query: text,
+                        path: {
+                            wildcard: "*"
+                        }
+                    }
+                }
+            }
+        ])
+        console.log(`RESULT SEARCH: `, result);
+        return result;
+    }
+    //#endregion SEARCH
+
 }   
